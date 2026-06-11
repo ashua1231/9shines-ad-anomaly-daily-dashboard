@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>9shines label &mdash; Ad Anomaly Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+  :root{
+    --bg:#0d1117; --card:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e;
+    --red:#f85149; --amber:#d29922; --green:#3fb950; --blue:#58a6ff;
+    --redbg:rgba(248,81,73,.12); --amberbg:rgba(210,153,34,.12); --greenbg:rgba(63,185,80,.12);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:24px}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+  .counts{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+  .pill{flex:1;min-width:140px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+  .pill .n{font-size:28px;font-weight:700;line-height:1}
+  .pill .l{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.05em}
+  .pill.red .n{color:var(--red)} .pill.amber .n{color:var(--amber)}
+  .pill.green .n{color:var(--green)} .pill.blue .n{color:var(--blue)}
+  h2{font-size:15px;margin:28px 0 12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .hcard{background:var(--card);border:1px solid var(--border);border-left-width:4px;border-radius:10px;padding:14px 16px}
+  .hcard.RED{border-left-color:var(--red)}
+  .hcard.AMBER{border-left-color:var(--amber)}
+  .hcard.GREEN{border-left-color:var(--green)}
+  .hcard .name{font-weight:600;font-size:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.05em}
+  .badge.RED{background:var(--redbg);color:var(--red)}
+  .badge.AMBER{background:var(--amberbg);color:var(--amber)}
+  .badge.GREEN{background:var(--greenbg);color:var(--green)}
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:12px}
+  .metrics .m{display:flex;justify-content:space-between}
+  .metrics .m span:first-child{color:var(--muted)}
+  .dev.up{color:var(--green)} .dev.down{color:var(--red)} .dev.neutral{color:var(--muted)}
+  .alerts{display:flex;flex-direction:column;gap:8px}
+  .alert{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;gap:12px;align-items:center;font-size:13px}
+  .alert .sev{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap}
+  .alert.CRITICAL{border-left:3px solid var(--red)} .alert.CRITICAL .sev{background:var(--redbg);color:var(--red)}
+  .alert.WARNING{border-left:3px solid var(--amber)} .alert.WARNING .sev{background:var(--amberbg);color:var(--amber)}
+  .alert.INFO{border-left:3px solid var(--blue)} .alert.INFO .sev{background:rgba(88,166,255,.12);color:var(--blue)}
+  .alert .ent{font-weight:600;min-width:120px}
+  .alert .det{color:var(--muted);flex:1}
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:720px){.charts{grid-template-columns:1fr}}
+  .chartbox{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;height:260px}
+  .chartbox h3{margin:0 0 10px;font-size:13px;color:var(--muted);font-weight:600}
+  .cwrap{height:200px;position:relative}
+</style>
+</head>
+<body>
+  <h1>9shines label - Ad Anomaly Dashboard</h1>
+  <div class="sub">7-day actuals vs 30-day normalised baseline &#183; Last updated: <strong id="ts">11 Jun 2026, 09:00 IST</strong></div>
+
+  <div class="counts">
+    <div class="pill red"><div class="n">5</div><div class="l">&#128308; Critical</div></div>
+    <div class="pill amber"><div class="n">8</div><div class="l">&#128993; Warning</div></div>
+    <div class="pill blue"><div class="n">2</div><div class="l">&#128309; Info</div></div>
+    <div class="pill green"><div class="n">2</div><div class="l">&#9923; Dependencies</div></div>
+  </div>
+
+  <h2>Meta Ads &mdash; Account Health</h2>
+  <div class="grid" id="metaGrid"></div>
+
+  <h2>Google Ads &mdash; Campaign Health</h2>
+  <div class="grid" id="googleGrid"></div>
+
+  <h2>Active Alerts</h2>
+  <div class="alerts" id="alertList"></div>
+
+  <h2>Trends</h2>
+  <div class="charts">
+    <div class="chartbox"><h3>ROAS &mdash; Actual vs Baseline</h3><div class="cwrap"><canvas id="roasChart"></canvas></div></div>
+    <div class="chartbox"><h3>Spend (&#8377;, 7-day)</h3><div class="cwrap"><canvas id="spendChart"></canvas></div></div>
+    <div class="chartbox"><h3>CPM &mdash; Actual vs Baseline</h3><div class="cwrap"><canvas id="cpmChart"></canvas></div></div>
+    <div class="chartbox"><h3>Google CPA deviation %</h3><div class="cwrap"><canvas id="cpaChart"></canvas></div></div>
+  </div>
+
+<script>
+const META = [
+  {name:"9 Shine 2023 CL", rag:"GREEN", spend:114996, roas:4.37, roasDev:-6.1, cpm:174.7, cpmDev:-1.4, purch:247, convDev:-12.4, ctr:6.23, ctrDev:2.8, baseRoas:4.66, baseCpm:177.3},
+  {name:"Highgarden 2026", rag:"RED", spend:9196, roas:0.68, roasDev:-19.8, cpm:523.1, cpmDev:79.8, purch:4, convDev:-54.9, ctr:3.31, ctrDev:-53.5, baseRoas:0.85, baseCpm:291.0}
+];
+const GOOGLE = [
+  {name:"RI_TOF P.MAX All-mixed", rag:"GREEN", spend:6629, roas:4.22, roasDev:-16.9, conv:14.1, convDev:9.7, cpa:469, cpaDev:-2.1, baseRoas:5.08, baseCpa:479.5},
+  {name:"RI_TOF P.MAX Comp ATC", rag:"RED", spend:6512, roas:3.88, roasDev:-40.7, conv:10.4, convDev:-39.0, cpa:624, cpaDev:69.8, baseRoas:6.54, baseCpa:367.3},
+  {name:"RI_MOF P.MAX", rag:"AMBER", spend:6341, roas:3.49, roasDev:-35.3, conv:10.0, convDev:-34.3, cpa:635, cpaDev:62.2, baseRoas:5.39, baseCpa:391.6},
+  {name:"RI_TOF Pmax Pluss", rag:"AMBER", spend:4703, roas:5.13, roasDev:-23.0, conv:14.0, convDev:4.2, cpa:336, cpaDev:8.7, baseRoas:6.66, baseCpa:309.1},
+  {name:"RI_MOF Brand Search", rag:"GREEN", spend:4174, roas:11.98, roasDev:16.1, conv:17.9, convDev:37.2, cpa:233, cpaDev:-13.8, baseRoas:10.32, baseCpa:270.8},
+  {name:"Long_Tshirts utube", rag:"GREEN", spend:3872, roas:6.07, roasDev:3.8, conv:12.1, convDev:-9.2, cpa:321, cpaDev:21.8, baseRoas:5.85, baseCpa:263.7},
+  {name:"Utube Sleeveless", rag:"GREEN", spend:3180, roas:6.05, roasDev:32.7, conv:7.1, convDev:5.3, cpa:448, cpaDev:0.2, baseRoas:4.56, baseCpa:446.9},
+  {name:"Short Nighty & T-Shirt", rag:"RED", spend:2964, roas:2.80, roasDev:-50.4, conv:5.4, convDev:-29.7, cpa:547, cpaDev:50.6, baseRoas:5.64, baseCpa:363.3}
+];
+const ALERTS = [
+  {plat:"Meta", ent:"Highgarden 2026", sev:"CRITICAL", det:"ROAS 0.68x &mdash; below 1.0x absolute floor"},
+  {plat:"Meta", ent:"Highgarden 2026", sev:"CRITICAL", det:"CPM spike +79.8% vs baseline"},
+  {plat:"Meta", ent:"Highgarden 2026", sev:"CRITICAL", det:"Purchases down 54.9%"},
+  {plat:"Meta", ent:"Highgarden 2026", sev:"WARNING", det:"CTR drop 53.5%"},
+  {plat:"Meta", ent:"Highgarden 2026", sev:"WARNING", det:"&#9923; Creative fatigue: CPM&uarr; + CTR&darr; + ROAS&darr;"},
+  {plat:"Google", ent:"RI_TOF P.MAX Comp ATC", sev:"CRITICAL", det:"ROAS drop 40.7% (6.54&#8594;3.88x)"},
+  {plat:"Google", ent:"RI_TOF P.MAX Comp ATC", sev:"WARNING", det:"CPA up 69.8%"},
+  {plat:"Google", ent:"Short Nighty & T-Shirt", sev:"CRITICAL", det:"ROAS drop 50.4% (5.64&#8594;2.80x)"},
+  {plat:"Google", ent:"Short Nighty & T-Shirt", sev:"WARNING", det:"CPA up 50.6%"},
+  {plat:"Google", ent:"RI_MOF P.MAX", sev:"WARNING", det:"ROAS drop 35.3%"},
+  {plat:"Google", ent:"RI_MOF P.MAX", sev:"WARNING", det:"CPA up 62.2%"},
+  {plat:"Google", ent:"RI_MOF P.MAX", sev:"WARNING", det:"&#9923; Budget exhaustion: impr-share&darr; + ROAS&darr;"},
+  {plat:"Google", ent:"RI_TOF Pmax Pluss", sev:"WARNING", det:"ROAS drop 23.0%"},
+  {plat:"Google", ent:"RI_TOF P.MAX All-mixed", sev:"INFO", det:"ROAS drop 16.9%"},
+  {plat:"Google", ent:"RI_MOF Brand Search", sev:"INFO", det:"Spend change +18.3%"}
+];
+
+function devClass(v){ return v>2?"up":(v<-2?"down":"neutral"); }
+function devStr(v){ return (v>0?"+":"")+v.toFixed(1)+"%"; }
+
+function metaCard(m){
+  return `<div class="hcard ${m.rag}">
+    <div class="name"><span>${m.name}</span><span class="badge ${m.rag}">${m.rag}</span></div>
+    <div class="metrics">
+      <div class="m"><span>ROAS</span><b>${m.roas.toFixed(2)}x <span class="dev ${devClass(m.roasDev)}">${devStr(m.roasDev)}</span></b></div>
+      <div class="m"><span>Spend</span><b>&#8377;${(m.spend/1000).toFixed(1)}k</b></div>
+      <div class="m"><span>CPM</span><b>&#8377;${m.cpm.toFixed(0)} <span class="dev ${devClass(-m.cpmDev)}">${devStr(m.cpmDev)}</span></b></div>
+      <div class="m"><span>Purchases</span><b>${m.purch} <span class="dev ${devClass(m.convDev)}">${devStr(m.convDev)}</span></b></div>
+      <div class="m"><span>CTR</span><b>${m.ctr.toFixed(2)}% <span class="dev ${devClass(m.ctrDev)}">${devStr(m.ctrDev)}</span></b></div>
+    </div></div>`;
+}
+function gCard(g){
+  return `<div class="hcard ${g.rag}">
+    <div class="name"><span>${g.name}</span><span class="badge ${g.rag}">${g.rag}</span></div>
+    <div class="metrics">
+      <div class="m"><span>ROAS</span><b>${g.roas.toFixed(2)}x <span class="dev ${devClass(g.roasDev)}">${devStr(g.roasDev)}</span></b></div>
+      <div class="m"><span>Spend</span><b>&#8377;${(g.spend/1000).toFixed(1)}k</b></div>
+      <div class="m"><span>Conv</span><b>${g.conv.toFixed(1)} <span class="dev ${devClass(g.convDev)}">${devStr(g.convDev)}</span></b></div>
+      <div class="m"><span>CPA</span><b>&#8377;${g.cpa.toFixed(0)} <span class="dev ${devClass(-g.cpaDev)}">${devStr(g.cpaDev)}</span></b></div>
+    </div></div>`;
+}
+document.getElementById("metaGrid").innerHTML = META.map(metaCard).join("");
+document.getElementById("googleGrid").innerHTML = GOOGLE.map(gCard).join("");
+document.getElementById("alertList").innerHTML = ALERTS.map(a=>
+  `<div class="alert ${a.sev}"><span class="sev">${a.sev}</span><span class="ent">${a.plat} &#183; ${a.ent}</span><span class="det">${a.det}</span></div>`
+).join("");
+
+const ax={scales:{y:{ticks:{color:"#8b949e"},grid:{color:"#21262d"}},x:{ticks:{color:"#8b949e"},grid:{display:false}}},plugins:{legend:{labels:{color:"#e6edf3"}}},responsive:true,maintainAspectRatio:false};
+const allNames=[...META.map(m=>m.name.split(" ")[0]), ...GOOGLE.map(g=>g.name.slice(0,10))];
+
+new Chart(document.getElementById("roasChart"),{type:"bar",data:{
+  labels:[...META,...GOOGLE].map(x=>x.name.length>14?x.name.slice(0,12)+"&hellip;":x.name),
+  datasets:[
+    {label:"Actual",data:[...META,...GOOGLE].map(x=>x.roas),backgroundColor:"#58a6ff"},
+    {label:"Baseline",data:[...META.map(m=>m.baseRoas),...GOOGLE.map(g=>g.baseRoas)],backgroundColor:"#484f58"}
+  ]},options:ax});
+
+new Chart(document.getElementById("spendChart"),{type:"bar",data:{
+  labels:[...META,...GOOGLE].map(x=>x.name.length>14?x.name.slice(0,12)+"&hellip;":x.name),
+  datasets:[{label:"Spend &#8377;",data:[...META,...GOOGLE].map(x=>x.spend),backgroundColor:"#3fb950"}]},options:ax});
+
+new Chart(document.getElementById("cpmChart"),{type:"bar",data:{
+  labels:META.map(m=>m.name.split(" ")[0]),
+  datasets:[
+    {label:"Actual CPM",data:META.map(m=>m.cpm),backgroundColor:"#f85149"},
+    {label:"Baseline CPM",data:META.map(m=>m.baseCpm),backgroundColor:"#484f58"}
+  ]},options:ax});
+
+new Chart(document.getElementById("cpaChart"),{type:"bar",data:{
+  labels:GOOGLE.map(g=>g.name.slice(0,12)),
+  datasets:[{label:"CPA dev %",data:GOOGLE.map(g=>g.cpaDev),
+    backgroundColor:GOOGLE.map(g=>g.cpaDev>30?"#f85149":(g.cpaDev>0?"#d29922":"#3fb950"))}]},options:ax});
+</script>
+</body>
+</html>
