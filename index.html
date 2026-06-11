@@ -1,217 +1,177 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>9shines label &mdash; Ad Anomaly Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-  :root{
-    --bg:#0d1117; --card:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e;
-    --red:#f85149; --amber:#d29922; --green:#3fb950; --blue:#58a6ff;
-    --redbg:rgba(248,81,73,.12); --amberbg:rgba(210,153,34,.12); --greenbg:rgba(63,185,80,.12);
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:24px;max-width:1200px;margin:0 auto}
-  h1{font-size:22px;margin:0 0 4px}
-  .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
-  .counts{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
-  .pill{flex:1;min-width:130px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
-  .pill .n{font-size:28px;font-weight:700;line-height:1}
-  .pill .l{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.05em}
-  .pill.red .n{color:var(--red)} .pill.amber .n{color:var(--amber)}
-  .pill.green .n{color:var(--green)} .pill.blue .n{color:var(--blue)}
-  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap}
-  .tab{background:none;border:none;color:var(--muted);font-size:14px;font-weight:600;padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
-  .tab:hover{color:var(--text)}
-  .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
-  .tab .cnt{display:inline-block;min-width:18px;font-size:11px;padding:1px 6px;border-radius:10px;background:var(--border);color:var(--text);margin-left:6px}
-  .tab.active .cnt{background:var(--blue);color:#0d1117}
-  .panel{display:none}
-  .panel.active{display:block}
-  h2{font-size:14px;margin:18px 0 12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
-  .hcard{background:var(--card);border:1px solid var(--border);border-left-width:4px;border-radius:10px;padding:14px 16px}
-  .hcard.RED{border-left-color:var(--red)}
-  .hcard.AMBER{border-left-color:var(--amber)}
-  .hcard.GREEN{border-left-color:var(--green)}
-  .hcard .name{font-weight:600;font-size:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
-  .badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.05em}
-  .badge.RED{background:var(--redbg);color:var(--red)}
-  .badge.AMBER{background:var(--amberbg);color:var(--amber)}
-  .badge.GREEN{background:var(--greenbg);color:var(--green)}
-  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:7px 14px;font-size:12px}
-  .metrics .m{display:flex;justify-content:space-between;gap:6px}
-  .metrics .m span:first-child{color:var(--muted)}
-  .dev.up{color:var(--green)} .dev.down{color:var(--red)} .dev.neutral{color:var(--muted)}
-  .alerts{display:flex;flex-direction:column;gap:8px}
-  .alert{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;gap:12px;align-items:center;font-size:13px}
-  .alert .sev{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap}
-  .alert.CRITICAL{border-left:3px solid var(--red)} .alert.CRITICAL .sev{background:var(--redbg);color:var(--red)}
-  .alert.WARNING{border-left:3px solid var(--amber)} .alert.WARNING .sev{background:var(--amberbg);color:var(--amber)}
-  .alert.INFO{border-left:3px solid var(--blue)} .alert.INFO .sev{background:rgba(88,166,255,.12);color:var(--blue)}
-  .alert .ent{font-weight:600;min-width:160px}
-  .alert .det{color:var(--muted);flex:1}
-  .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
-  @media(max-width:720px){.charts{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}}
-  .chartbox{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;height:260px}
-  .chartbox h3{margin:0 0 10px;font-size:13px;color:var(--muted);font-weight:600}
-  .cwrap{height:200px;position:relative}
-  .dep{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--amber)}
-  .dep.crit{border-left-color:var(--red)}
-  .dep .t{font-weight:600;font-size:14px;margin-bottom:4px}
-  .dep .d{font-size:13px;color:var(--muted)}
-  .dep .chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;margin-right:8px;background:var(--amberbg);color:var(--amber)}
-  .dep.crit .chip{background:var(--redbg);color:var(--red)}
-</style>
-</head>
-<body>
-  <h1>9shines label &mdash; Ad Anomaly Dashboard</h1>
-  <div class="sub">7-day actuals vs 30-day normalised baseline &#183; Last updated: <strong id="ts">11 Jun 2026, 09:00 IST</strong></div>
-
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0b0f17;color:#e5e7eb;padding:20px}
+.wrap{max-width:1200px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+h1{font-size:20px;font-weight:700}
+.updated{font-size:12px;color:#9ca3af}
+.counts{display:flex;gap:10px;flex-wrap:wrap}
+.count{padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;background:#161b27}
+.count b{font-size:18px;display:block}
+.c-crit{color:#ef4444}.c-warn{color:#f59e0b}.c-info{color:#3b82f6}.c-dep{color:#a78bfa}
+.tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid #1f2937}
+.tab{padding:10px 16px;background:none;border:none;color:#9ca3af;cursor:pointer;font-size:14px;font-weight:600;border-bottom:2px solid transparent}
+.tab.active{color:#fff;border-bottom-color:#a78bfa}
+.tab .b{display:inline-block;min-width:18px;padding:1px 6px;margin-left:6px;border-radius:9px;background:#374151;font-size:11px}
+.panel{display:none}.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;margin-bottom:22px}
+.card{background:#131825;border-radius:12px;padding:16px}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.card-head h3{font-size:14px;flex:1}
+.dot{width:9px;height:9px;border-radius:50%}
+.rag{font-size:11px;font-weight:700}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px}
+.m label{display:block;font-size:11px;color:#9ca3af;margin-bottom:2px}
+.m b{font-size:16px;margin-right:6px}.m span{font-size:12px;font-weight:600}
+.chart-box{background:#131825;border-radius:12px;padding:16px;margin-bottom:18px}
+.chart-box h3{font-size:13px;margin-bottom:12px;color:#d1d5db}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.charts{grid-template-columns:1fr}}
+.dep-entity{font-size:12px;color:#a78bfa;margin-bottom:4px}.dep-detail{font-size:13px;color:#cbd5e1}
+table{width:100%;border-collapse:collapse;font-size:13px;background:#131825;border-radius:12px;overflow:hidden}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid #1f2937}
+th{color:#9ca3af;font-size:11px;text-transform:uppercase}
+.badge{padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;color:#fff}
+.empty{color:#6b7280;padding:20px}
+h2.sec{font-size:14px;margin:6px 0 10px;color:#9ca3af}
+</style></head>
+<body><div class="wrap">
+<header>
+  <div><h1>9shines label &mdash; Ad Anomaly Dashboard</h1><p class="updated">Last updated: 2026-06-11 &#183; 7-day vs 30-day baseline</p></div>
   <div class="counts">
-    <div class="pill red"><div class="n">6</div><div class="l">Critical</div></div>
-    <div class="pill amber"><div class="n">8</div><div class="l">Warning</div></div>
-    <div class="pill blue"><div class="n">2</div><div class="l">Info</div></div>
-    <div class="pill green"><div class="n">2</div><div class="l">Dependencies</div></div>
+    <div class="count c-crit">CRITICAL<b>6</b></div>
+    <div class="count c-warn">WARNING<b>8</b></div>
+    <div class="count c-info">INFO<b>4</b></div>
+    <div class="count c-dep">DEPENDENCIES<b>1</b></div>
   </div>
+</header>
+<div class="tabs">
+  <button class="tab active" data-t="meta">Meta Ads<span class="b">3</span></button>
+  <button class="tab" data-t="google">Google Ads<span class="b">8</span></button>
+  <button class="tab" data-t="dep">Discrepancies &amp; Dependencies<span class="b">19</span></button>
+</div>
 
-  <div class="tabs">
-    <button class="tab active" data-tab="meta">Meta Ads <span class="cnt">3</span></button>
-    <button class="tab" data-tab="google">Google Ads <span class="cnt">8</span></button>
-    <button class="tab" data-tab="deps">Discrepancies &amp; Dependencies <span class="cnt" id="depCnt">2</span></button>
+<div class="panel active" id="meta">
+  <div class="grid"><div class="card" style="border-left:4px solid #22c55e">
+      <div class="card-head"><span class="dot" style="background:#22c55e"></span><h3>9 Shine 2023 CL</h3><span class="rag" style="color:#22c55e">GREEN</span></div>
+      <div class="metrics">
+        <div class="m"><label>ROAS</label><b>4.37x</b><span style="color:#ef4444">&darr; 6%</span></div>
+        <div class="m"><label>Spend</label><b>&#8377;115,007</b></div>
+        <div class="m"><label>CPM</label><b>&#8377;175</b><span style="color:#22c55e">&darr; 1%</span></div>
+        <div class="m"><label>Purchases</label><b>247</b><span style="color:#ef4444">&darr; 12%</span></div>
+        <div class="m"><label>CTR</label><b>6.2%</b><span style="color:#22c55e">&uarr; 3%</span></div>
+      </div></div><div class="card" style="border-left:4px solid #ef4444">
+      <div class="card-head"><span class="dot" style="background:#ef4444"></span><h3>Highgarden 2026</h3><span class="rag" style="color:#ef4444">RED</span></div>
+      <div class="metrics">
+        <div class="m"><label>ROAS</label><b>0.68x</b><span style="color:#ef4444">&darr; 20%</span></div>
+        <div class="m"><label>Spend</label><b>&#8377;9,196</b></div>
+        <div class="m"><label>CPM</label><b>&#8377;523</b><span style="color:#ef4444">&uarr; 80%</span></div>
+        <div class="m"><label>Purchases</label><b>4</b><span style="color:#ef4444">&darr; 55%</span></div>
+        <div class="m"><label>CTR</label><b>3.3%</b><span style="color:#ef4444">&darr; 54%</span></div>
+      </div></div><div class="card" style="border-left:4px solid #ef4444">
+      <div class="card-head"><span class="dot" style="background:#ef4444"></span><h3>9shines international</h3><span class="rag" style="color:#ef4444">RED</span></div>
+      <div class="metrics">
+        <div class="m"><label>ROAS</label><b>3.40x</b><span style="color:#22c55e">&uarr; 40%</span></div>
+        <div class="m"><label>Spend</label><b>&#8377;18,092</b></div>
+        <div class="m"><label>CPM</label><b>&#8377;727</b><span style="color:#ef4444">&uarr; 77%</span></div>
+        <div class="m"><label>Purchases</label><b>3</b><span style="color:#22c55e">&uarr; 17%</span></div>
+        <div class="m"><label>CTR</label><b>3.4%</b><span style="color:#22c55e">&uarr; 66%</span></div>
+      </div></div></div>
+  <div class="charts">
+    <div class="chart-box"><h3>ROAS: actual vs baseline</h3><canvas id="mRoas"></canvas></div>
+    <div class="chart-box"><h3>CPM (&#8377;): actual vs baseline</h3><canvas id="mCpm"></canvas></div>
   </div>
+</div>
 
-  <div class="panel active" id="panel-meta">
-    <h2>Meta Ads &mdash; Account Health (all 3 accounts)</h2>
-    <div class="grid" id="metaGrid"></div>
-    <div class="charts">
-      <div class="chartbox"><h3>ROAS &mdash; Actual vs Baseline</h3><div class="cwrap"><canvas id="mRoas"></canvas></div></div>
-      <div class="chartbox"><h3>CPM &mdash; Actual vs Baseline (&#8377;)</h3><div class="cwrap"><canvas id="mCpm"></canvas></div></div>
-    </div>
+<div class="panel" id="google">
+  <div class="grid"><div class="card" style="border-left:4px solid #ef4444">
+      <div class="card-head"><span class="dot" style="background:#ef4444"></span><h3>Short Nighty & T Shirt</h3><span class="rag" style="color:#ef4444">RED</span></div>
+      <div class="metrics">
+        <div class="m"><label>ROAS</label><b>2.74x</b><span style="color:#ef4444">&darr; 51%</span></div>
+        <div class="m"><label>Spend</label><b>&#8377;3,029</b></div>
+        <div class="m"><label>Conv</label><b>5.4</b><span style="color:#ef4444">&darr; 30%</span></div>
+        <div class="m"><label>CPA</label><b>&#8377;559</b><span style="color:#ef4444">&uarr; 53%</span></div>
+      </div></div><div class="card" style="border-left:4px solid #ef4444">
+      <div class="card-head"><span class="dot" style="background:#ef4444"></span><h3>RI_TOF_P.MAX_Comp. All Mixed_ATC</h3><span class="rag" style="color:#ef4444">RED</span></div>
+      <div class="metrics">
+        <div class="m"><label>ROAS</label><b>3.87x</b><span style="color:#ef4444">&darr; 41%</span></div>
+        <div class="m"><label>Spend</label><b>&#8377;6,521</b></div>
+        <div class="m"><label>Conv</label><b>10.4</b><span style="color:#ef4444">&darr; 39%</span></div>
+        <div class="m"><label>CPA</label><b>&#8377;625</b><span style="color:#ef4444">&uarr; 70%</span></div>
+      </div></div><div class="card" style="border-left:4px solid #f59e0b">
+      <div class="card-head"><span class="dot" style="background:#f59e0b"></span><h3>RI_MOF_P.MAX_19/06/2024</h3><span class="rag" style="color:#f59e0b">AMBER</span></div>
+      <div class="metrics">
+        <div class="m"><label>ROAS</label><b>3.44x</b><span style="color:#ef4444">&darr; 36%</span></div>
+        <div class="m"><label>Spend</label><b>&#8377;6,425</b></div>
+        <div class="m"><label>Conv</label><b>10.0</b><span style="color:#ef4444">&darr; 34%</span></div>
+        <div class="m"><label>CPA</label><b>&#8377;643</b><span style="color:#ef4444">&uarr; 64%</span></div>
+      </div></div><div class="card" style="border-left:4px solid #f59e0b">
+      <div class="card-head"><span class="dot" style="background:#f59e0b"></span><h3>Long_Tshirts_utube</h3><span class="rag" style="color:#f59e0b">AMBER</span></div>
+      <div class="metrics">
+        <div class="m"><label>ROAS</label><b>3.74x</b><span style="color:#ef4444">&darr; 29%</span></div>
+        <div class="m"><label>Spend</label><b>&#8377;3,947</b></div>
+        <div class="m"><label>Conv</label><b>10.1</b><span style="color:#ef4444">&darr; 21%</span></div>
+        <div class="m"><label>CPA</label><b>&#8377;392</b><span style="color:#ef4444">&uarr; 43%</span></div>
+      </div></div><div class="card" style="border-left:4px solid #f59e0b">
+      <div class="card-head"><span class="dot" style="background:#f59e0b"></span><h3>RI_TOF_Pmax_Catelogue_Pluss</h3><span class="rag" style="color:#f59e0b">AMBER</span></div>
+      <div class="metrics">
+        <div class="m"><label>ROAS</label><b>4.92x</b><span style="color:#ef4444">&darr; 25%</span></div>
+        <div class="m"><label>Spend</label><b>&#8377;4,912</b></div>
+        <div class="m"><label>Conv</label><b>14.0</b><span style="color:#22c55e">&uarr; 4%</span></div>
+        <div class="m"><label>CPA</label><b>&#8377;351</b><span style="color:#ef4444">&uarr; 12%</span></div>
+      </div></div><div class="card" style="border-left:4px solid #22c55e">
+      <div class="card-head"><span class="dot" style="background:#22c55e"></span><h3>RI_TOF_P.MAX_Catelogue_All mixed_No adcopies</h3><span class="rag" style="color:#22c55e">GREEN</span></div>
+      <div class="metrics">
+        <div class="m"><label>ROAS</label><b>4.11x</b><span style="color:#ef4444">&darr; 19%</span></div>
+        <div class="m"><label>Spend</label><b>&#8377;6,804</b></div>
+        <div class="m"><label>Conv</label><b>14.1</b><span style="color:#22c55e">&uarr; 10%</span></div>
+        <div class="m"><label>CPA</label><b>&#8377;482</b><span style="color:#22c55e">&darr; 0%</span></div>
+      </div></div><div class="card" style="border-left:4px solid #22c55e">
+      <div class="card-head"><span class="dot" style="background:#22c55e"></span><h3>RI_MOF_Brand Search</h3><span class="rag" style="color:#22c55e">GREEN</span></div>
+      <div class="metrics">
+        <div class="m"><label>ROAS</label><b>11.81x</b><span style="color:#22c55e">&uarr; 15%</span></div>
+        <div class="m"><label>Spend</label><b>&#8377;4,236</b></div>
+        <div class="m"><label>Conv</label><b>17.9</b><span style="color:#22c55e">&uarr; 37%</span></div>
+        <div class="m"><label>CPA</label><b>&#8377;237</b><span style="color:#22c55e">&darr; 13%</span></div>
+      </div></div><div class="card" style="border-left:4px solid #22c55e">
+      <div class="card-head"><span class="dot" style="background:#22c55e"></span><h3>Utube Sleeveless</h3><span class="rag" style="color:#22c55e">GREEN</span></div>
+      <div class="metrics">
+        <div class="m"><label>ROAS</label><b>5.90x</b><span style="color:#22c55e">&uarr; 30%</span></div>
+        <div class="m"><label>Spend</label><b>&#8377;3,265</b></div>
+        <div class="m"><label>Conv</label><b>7.1</b><span style="color:#22c55e">&uarr; 5%</span></div>
+        <div class="m"><label>CPA</label><b>&#8377;460</b><span style="color:#ef4444">&uarr; 2%</span></div>
+      </div></div></div>
+  <div class="charts">
+    <div class="chart-box"><h3>ROAS: actual vs baseline</h3><canvas id="gRoas"></canvas></div>
+    <div class="chart-box"><h3>CPA deviation %</h3><canvas id="gCpa"></canvas></div>
   </div>
+</div>
 
-  <div class="panel" id="panel-google">
-    <h2>Google Ads &mdash; Campaign Health</h2>
-    <div class="grid" id="googleGrid"></div>
-    <div class="charts">
-      <div class="chartbox"><h3>ROAS &mdash; Actual vs Baseline</h3><div class="cwrap"><canvas id="gRoas"></canvas></div></div>
-      <div class="chartbox"><h3>CPA deviation %</h3><div class="cwrap"><canvas id="gCpa"></canvas></div></div>
-    </div>
-  </div>
+<div class="panel" id="dep">
+  <h2 class="sec">Compound patterns</h2>
+  <div class="grid"><div class="card" style="border-left:4px solid #f59e0b">
+      <div class="card-head"><h3>Creative fatigue</h3><span class="rag" style="color:#f59e0b">WARNING</span></div>
+      <p class="dep-entity">Meta &#183; Highgarden 2026</p><p class="dep-detail">CPM +80%, CTR -54%, ROAS -20% &mdash; refresh creatives</p></div></div>
+  <h2 class="sec">All active alerts</h2>
+  <table><thead><tr><th>Severity</th><th>Platform</th><th>Entity</th><th>Metric</th><th>Detail</th></tr></thead><tbody><tr><td><span class="badge" style="background:#ef4444">CRITICAL</span></td><td>Meta</td><td>Highgarden 2026</td><td>ROAS</td><td>ROAS absolute 0.68x <1.0</td></tr><tr><td><span class="badge" style="background:#ef4444">CRITICAL</span></td><td>Meta</td><td>Highgarden 2026</td><td>CPM</td><td>CPM spike +80%</td></tr><tr><td><span class="badge" style="background:#ef4444">CRITICAL</span></td><td>Meta</td><td>Highgarden 2026</td><td>Purchases</td><td>Purchases drop -55%</td></tr><tr><td><span class="badge" style="background:#f59e0b">WARNING</span></td><td>Meta</td><td>Highgarden 2026</td><td>CTR</td><td>CTR drop -54%</td></tr><tr><td><span class="badge" style="background:#3b82f6">INFO</span></td><td>Meta</td><td>Highgarden 2026</td><td>ROAS</td><td>ROAS drop -20%</td></tr><tr><td><span class="badge" style="background:#ef4444">CRITICAL</span></td><td>Meta</td><td>9shines international</td><td>CPM</td><td>CPM spike +77%</td></tr><tr><td><span class="badge" style="background:#3b82f6">INFO</span></td><td>Google</td><td>RI_TOF_P.MAX_Catelogue_All mixed_No adcopies</td><td>ROAS</td><td>ROAS drop -19%</td></tr><tr><td><span class="badge" style="background:#ef4444">CRITICAL</span></td><td>Google</td><td>RI_TOF_P.MAX_Comp. All Mixed_ATC</td><td>ROAS</td><td>ROAS drop -41%</td></tr><tr><td><span class="badge" style="background:#f59e0b">WARNING</span></td><td>Google</td><td>RI_TOF_P.MAX_Comp. All Mixed_ATC</td><td>CPA</td><td>CPA up +70%</td></tr><tr><td><span class="badge" style="background:#f59e0b">WARNING</span></td><td>Google</td><td>RI_MOF_P.MAX_19/06/2024</td><td>ROAS</td><td>ROAS drop -36%</td></tr><tr><td><span class="badge" style="background:#f59e0b">WARNING</span></td><td>Google</td><td>RI_MOF_P.MAX_19/06/2024</td><td>CPA</td><td>CPA up +64%</td></tr><tr><td><span class="badge" style="background:#f59e0b">WARNING</span></td><td>Google</td><td>RI_TOF_Pmax_Catelogue_Pluss</td><td>ROAS</td><td>ROAS drop -25%</td></tr><tr><td><span class="badge" style="background:#3b82f6">INFO</span></td><td>Google</td><td>RI_TOF_Pmax_Catelogue_Pluss</td><td>Spend</td><td>Spend change +17%</td></tr><tr><td><span class="badge" style="background:#3b82f6">INFO</span></td><td>Google</td><td>RI_MOF_Brand Search</td><td>Spend</td><td>Spend change +20%</td></tr><tr><td><span class="badge" style="background:#f59e0b">WARNING</span></td><td>Google</td><td>Long_Tshirts_utube</td><td>ROAS</td><td>ROAS drop -29%</td></tr><tr><td><span class="badge" style="background:#f59e0b">WARNING</span></td><td>Google</td><td>Long_Tshirts_utube</td><td>CPA</td><td>CPA up +43%</td></tr><tr><td><span class="badge" style="background:#ef4444">CRITICAL</span></td><td>Google</td><td>Short Nighty & T Shirt</td><td>ROAS</td><td>ROAS drop -51%</td></tr><tr><td><span class="badge" style="background:#f59e0b">WARNING</span></td><td>Google</td><td>Short Nighty & T Shirt</td><td>CPA</td><td>CPA up +53%</td></tr></tbody></table>
+</div>
 
-  <div class="panel" id="panel-deps">
-    <h2>Compound Patterns &mdash; Discrepancies &amp; Dependencies</h2>
-    <div id="depList"></div>
-    <h2>All Active Alerts</h2>
-    <div class="alerts" id="alertList"></div>
-  </div>
-
+</div>
 <script>
-const META = [
-  {name:"9 Shine 2023 CL", rag:"GREEN", spend:114996, roas:4.37, roasDev:-6.1, cpm:174.7, cpmDev:-1.4, purch:247, convDev:-12.4, ctr:6.23, ctrDev:2.8, baseRoas:4.66, baseCpm:177.3},
-  {name:"Highgarden 2026", rag:"RED", spend:9196, roas:0.68, roasDev:-19.8, cpm:523.1, cpmDev:79.8, purch:4, convDev:-54.9, ctr:3.31, ctrDev:-53.5, baseRoas:0.85, baseCpm:291.0},
-  {name:"9shines international", rag:"RED", spend:18092, roas:3.40, roasDev:39.6, cpm:726.6, cpmDev:77.0, purch:3, convDev:16.7, ctr:3.38, ctrDev:66.1, baseRoas:2.44, baseCpm:410.4}
-];
-const GOOGLE = [
-  {name:"RI_TOF P.MAX All-mixed", rag:"GREEN", spend:6629, roas:4.22, roasDev:-16.9, conv:14.1, convDev:9.7, cpa:469, cpaDev:-2.1, baseRoas:5.08},
-  {name:"RI_TOF P.MAX Comp ATC", rag:"RED", spend:6512, roas:3.88, roasDev:-40.7, conv:10.4, convDev:-39.0, cpa:624, cpaDev:69.8, baseRoas:6.54},
-  {name:"RI_MOF P.MAX", rag:"AMBER", spend:6341, roas:3.49, roasDev:-35.3, conv:10.0, convDev:-34.3, cpa:635, cpaDev:62.2, baseRoas:5.39},
-  {name:"RI_TOF Pmax Pluss", rag:"AMBER", spend:4703, roas:5.13, roasDev:-23.0, conv:14.0, convDev:4.2, cpa:336, cpaDev:8.7, baseRoas:6.66},
-  {name:"RI_MOF Brand Search", rag:"GREEN", spend:4174, roas:11.98, roasDev:16.1, conv:17.9, convDev:37.2, cpa:233, cpaDev:-13.8, baseRoas:10.32},
-  {name:"Long_Tshirts utube", rag:"GREEN", spend:3872, roas:6.07, roasDev:3.8, conv:12.1, convDev:-9.2, cpa:321, cpaDev:21.8, baseRoas:5.85},
-  {name:"Utube Sleeveless", rag:"GREEN", spend:3180, roas:6.05, roasDev:32.7, conv:7.1, convDev:5.3, cpa:448, cpaDev:0.2, baseRoas:4.56},
-  {name:"Short Nighty & T-Shirt", rag:"RED", spend:2964, roas:2.80, roasDev:-50.4, conv:5.4, convDev:-29.7, cpa:547, cpaDev:50.6, baseRoas:5.64}
-];
-const DEPS = [
-  {crit:false, chip:"CREATIVE FATIGUE", t:"Highgarden 2026 (Meta)", d:"CPM &uarr; 80% + CTR &darr; 53% + ROAS &darr; 20% &mdash; classic creative-fatigue signal. Refresh creatives."},
-  {crit:false, chip:"BUDGET EXHAUSTION", t:"RI_MOF P.MAX (Google)", d:"Impression share &darr; 56% + ROAS &darr; 35% &mdash; campaign likely budget-capped. Review daily budget / bids."}
-];
-const ALERTS = [
-  {plat:"Meta", ent:"Highgarden 2026", sev:"CRITICAL", det:"ROAS 0.68x &mdash; below 1.0x absolute floor"},
-  {plat:"Meta", ent:"Highgarden 2026", sev:"CRITICAL", det:"CPM spike +79.8% vs baseline"},
-  {plat:"Meta", ent:"Highgarden 2026", sev:"CRITICAL", det:"Purchases down 54.9%"},
-  {plat:"Meta", ent:"9shines international", sev:"CRITICAL", det:"CPM spike +77.0% vs baseline"},
-  {plat:"Meta", ent:"Highgarden 2026", sev:"WARNING", det:"CTR drop 53.5%"},
-  {plat:"Google", ent:"RI_TOF P.MAX Comp ATC", sev:"CRITICAL", det:"ROAS drop 40.7% (6.54&#8594;3.88x)"},
-  {plat:"Google", ent:"Short Nighty & T-Shirt", sev:"CRITICAL", det:"ROAS drop 50.4% (5.64&#8594;2.80x)"},
-  {plat:"Google", ent:"RI_TOF P.MAX Comp ATC", sev:"WARNING", det:"CPA up 69.8%"},
-  {plat:"Google", ent:"Short Nighty & T-Shirt", sev:"WARNING", det:"CPA up 50.6%"},
-  {plat:"Google", ent:"RI_MOF P.MAX", sev:"WARNING", det:"ROAS drop 35.3%"},
-  {plat:"Google", ent:"RI_MOF P.MAX", sev:"WARNING", det:"CPA up 62.2%"},
-  {plat:"Google", ent:"RI_TOF Pmax Pluss", sev:"WARNING", det:"ROAS drop 23.0%"},
-  {plat:"Google", ent:"RI_TOF P.MAX All-mixed", sev:"INFO", det:"ROAS drop 16.9%"},
-  {plat:"Google", ent:"RI_MOF Brand Search", sev:"INFO", det:"Spend change +18.3%"}
-];
-
-function inr(n){ return "&#8377;"+ (n>=1000 ? (n/1000).toFixed(1)+"k" : n.toFixed(0)); }
-function devClass(v){ return v>2?"up":(v<-2?"down":"neutral"); }
-function devStr(v){ return (v>0?"+":"")+v.toFixed(1)+"%"; }
-
-function metaCard(m){
-  return `<div class="hcard ${m.rag}">
-    <div class="name"><span>${m.name}</span><span class="badge ${m.rag}">${m.rag}</span></div>
-    <div class="metrics">
-      <div class="m"><span>ROAS</span><b>${m.roas.toFixed(2)}x <span class="dev ${devClass(m.roasDev)}">${devStr(m.roasDev)}</span></b></div>
-      <div class="m"><span>Spend</span><b>${inr(m.spend)}</b></div>
-      <div class="m"><span>CPM</span><b>&#8377;${m.cpm.toFixed(0)} <span class="dev ${devClass(-m.cpmDev)}">${devStr(m.cpmDev)}</span></b></div>
-      <div class="m"><span>Purchases</span><b>${m.purch} <span class="dev ${devClass(m.convDev)}">${devStr(m.convDev)}</span></b></div>
-      <div class="m"><span>CTR</span><b>${m.ctr.toFixed(2)}% <span class="dev ${devClass(m.ctrDev)}">${devStr(m.ctrDev)}</span></b></div>
-    </div></div>`;
-}
-function gCard(g){
-  return `<div class="hcard ${g.rag}">
-    <div class="name"><span>${g.name}</span><span class="badge ${g.rag}">${g.rag}</span></div>
-    <div class="metrics">
-      <div class="m"><span>ROAS</span><b>${g.roas.toFixed(2)}x <span class="dev ${devClass(g.roasDev)}">${devStr(g.roasDev)}</span></b></div>
-      <div class="m"><span>Spend</span><b>${inr(g.spend)}</b></div>
-      <div class="m"><span>Conv</span><b>${g.conv.toFixed(1)} <span class="dev ${devClass(g.convDev)}">${devStr(g.convDev)}</span></b></div>
-      <div class="m"><span>CPA</span><b>&#8377;${g.cpa.toFixed(0)} <span class="dev ${devClass(-g.cpaDev)}">${devStr(g.cpaDev)}</span></b></div>
-    </div></div>`;
-}
-document.getElementById("metaGrid").innerHTML = META.map(metaCard).join("");
-document.getElementById("googleGrid").innerHTML = GOOGLE.map(gCard).join("");
-document.getElementById("depList").innerHTML = DEPS.map(d=>
-  `<div class="dep ${d.crit?'crit':''}"><div class="t"><span class="chip">${d.chip}</span>${d.t}</div><div class="d">${d.d}</div></div>`
-).join("");
-document.getElementById("alertList").innerHTML = ALERTS.map(a=>
-  `<div class="alert ${a.sev}"><span class="sev">${a.sev}</span><span class="ent">${a.plat} &#183; ${a.ent}</span><span class="det">${a.det}</span></div>`
-).join("");
-document.getElementById("depCnt").textContent = DEPS.length;
-
-let charts={};
-document.querySelectorAll(".tab").forEach(t=>{
-  t.addEventListener("click",()=>{
-    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-    document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
-    t.classList.add("active");
-    document.getElementById("panel-"+t.dataset.tab).classList.add("active");
-    renderCharts(t.dataset.tab);
-  });
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');document.getElementById(t.dataset.t).classList.add('active');
 });
-
-const ax={scales:{y:{ticks:{color:"#8b949e"},grid:{color:"#21262d"}},x:{ticks:{color:"#8b949e"},grid:{display:false}}},plugins:{legend:{labels:{color:"#e6edf3"}}},responsive:true,maintainAspectRatio:false};
-function mk(id,cfg){ if(charts[id])return; const el=document.getElementById(id); if(el) charts[id]=new Chart(el,cfg); }
-function clip(s,n){ return s.length>n ? s.slice(0,n)+"…" : s; }
-function renderCharts(tab){
-  if(tab==="meta"){
-    mk("mRoas",{type:"bar",data:{labels:META.map(m=>clip(m.name,13)),
-      datasets:[{label:"Actual",data:META.map(m=>m.roas),backgroundColor:"#58a6ff"},
-                {label:"Baseline",data:META.map(m=>m.baseRoas),backgroundColor:"#484f58"}]},options:ax});
-    mk("mCpm",{type:"bar",data:{labels:META.map(m=>clip(m.name,13)),
-      datasets:[{label:"Actual CPM",data:META.map(m=>m.cpm),backgroundColor:"#f85149"},
-                {label:"Baseline CPM",data:META.map(m=>m.baseCpm),backgroundColor:"#484f58"}]},options:ax});
-  }
-  if(tab==="google"){
-    mk("gRoas",{type:"bar",data:{labels:GOOGLE.map(g=>clip(g.name,11)),
-      datasets:[{label:"Actual",data:GOOGLE.map(g=>g.roas),backgroundColor:"#58a6ff"},
-                {label:"Baseline",data:GOOGLE.map(g=>g.baseRoas),backgroundColor:"#484f58"}]},options:ax});
-    mk("gCpa",{type:"bar",data:{labels:GOOGLE.map(g=>clip(g.name,11)),
-      datasets:[{label:"CPA dev %",data:GOOGLE.map(g=>g.cpaDev),
-        backgroundColor:GOOGLE.map(g=>g.cpaDev>30?"#f85149":(g.cpaDev>0?"#d29922":"#3fb950"))}]},options:ax});
-  }
-}
-renderCharts("meta");
+const gridc='#1f2937',tick='#9ca3af';
+const baseOpts=(t)=>({responsive:true,plugins:{legend:{labels:{color:tick,boxWidth:12,font:{size:11}}}},scales:{x:{ticks:{color:tick,font:{size:10}},grid:{color:gridc}},y:{ticks:{color:tick},grid:{color:gridc}}}});
+new Chart(mRoas,{type:'bar',data:{labels:["9 Shine 2023 CL", "Highgarden 2026", "9shines international"],datasets:[{label:'Actual (7d)',data:[4.37, 0.68, 3.4],backgroundColor:'#a78bfa'},{label:'Baseline',data:[4.66, 0.85, 2.44],backgroundColor:'#374151'}]},options:baseOpts()});
+new Chart(mCpm,{type:'bar',data:{labels:["9 Shine 2023 CL", "Highgarden 2026", "9shines international"],datasets:[{label:'Actual (7d)',data:[174.7, 523.1, 726.6],backgroundColor:'#f59e0b'},{label:'Baseline',data:[177.3, 291.0, 410.4],backgroundColor:'#374151'}]},options:baseOpts()});
+new Chart(gRoas,{type:'bar',data:{labels:["RI_TOF_P.MAX_Catelogue", "RI_TOF_P.MAX_Comp. All", "RI_MOF_P.MAX_19/06/202", "RI_TOF_Pmax_Catelogue_", "RI_MOF_Brand Search", "Long_Tshirts_utube", "Utube Sleeveless", "Short Nighty & T Shirt"],datasets:[{label:'Actual (7d)',data:[4.11, 3.87, 3.44, 4.92, 11.81, 3.74, 5.9, 2.74],backgroundColor:'#22c55e'},{label:'Baseline',data:[5.05, 6.54, 5.37, 6.59, 10.28, 5.24, 4.53, 5.61],backgroundColor:'#374151'}]},options:baseOpts()});
+new Chart(gCpa,{type:'bar',data:{labels:["RI_TOF_P.MAX_Catelogue", "RI_TOF_P.MAX_Comp. All", "RI_MOF_P.MAX_19/06/202", "RI_TOF_Pmax_Catelogue_", "RI_MOF_Brand Search", "Long_Tshirts_utube", "Utube Sleeveless", "Short Nighty & T Shirt"],datasets:[{label:'CPA dev %',data:[-0.2, 70.0, 63.8, 12.2, -12.9, 42.9, 2.2, 53.0],backgroundColor:[-0.2, 70.0, 63.8, 12.2, -12.9, 42.9, 2.2, 53.0].map(v=>v>30?'#ef4444':v>0?'#f59e0b':'#22c55e')}]},options:baseOpts()});
 </script>
-</body>
-</html>
+</body></html>
