@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>9shines label &mdash; Ad Anomaly Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
 <style>
   :root{
     --bg:#0d1117; --card:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e;
@@ -12,28 +12,36 @@
     --redbg:rgba(248,81,73,.12); --amberbg:rgba(210,153,34,.12); --greenbg:rgba(63,185,80,.12);
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:24px}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:24px;max-width:1200px;margin:0 auto}
   h1{font-size:22px;margin:0 0 4px}
   .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
-  .counts{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
-  .pill{flex:1;min-width:140px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+  .counts{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  .pill{flex:1;min-width:130px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
   .pill .n{font-size:28px;font-weight:700;line-height:1}
   .pill .l{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.05em}
   .pill.red .n{color:var(--red)} .pill.amber .n{color:var(--amber)}
   .pill.green .n{color:var(--green)} .pill.blue .n{color:var(--blue)}
-  h2{font-size:15px;margin:28px 0 12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap}
+  .tab{background:none;border:none;color:var(--muted);font-size:14px;font-weight:600;padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
+  .tab:hover{color:var(--text)}
+  .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .tab .cnt{display:inline-block;min-width:18px;font-size:11px;padding:1px 6px;border-radius:10px;background:var(--border);color:var(--text);margin-left:6px}
+  .tab.active .cnt{background:var(--blue);color:#0d1117}
+  .panel{display:none}
+  .panel.active{display:block}
+  h2{font-size:14px;margin:18px 0 12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
   .hcard{background:var(--card);border:1px solid var(--border);border-left-width:4px;border-radius:10px;padding:14px 16px}
   .hcard.RED{border-left-color:var(--red)}
   .hcard.AMBER{border-left-color:var(--amber)}
   .hcard.GREEN{border-left-color:var(--green)}
-  .hcard .name{font-weight:600;font-size:14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .hcard .name{font-weight:600;font-size:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
   .badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.05em}
   .badge.RED{background:var(--redbg);color:var(--red)}
   .badge.AMBER{background:var(--amberbg);color:var(--amber)}
   .badge.GREEN{background:var(--greenbg);color:var(--green)}
-  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:12px}
-  .metrics .m{display:flex;justify-content:space-between}
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:7px 14px;font-size:12px}
+  .metrics .m{display:flex;justify-content:space-between;gap:6px}
   .metrics .m span:first-child{color:var(--muted)}
   .dev.up{color:var(--green)} .dev.down{color:var(--red)} .dev.neutral{color:var(--muted)}
   .alerts{display:flex;flex-direction:column;gap:8px}
@@ -42,76 +50,101 @@
   .alert.CRITICAL{border-left:3px solid var(--red)} .alert.CRITICAL .sev{background:var(--redbg);color:var(--red)}
   .alert.WARNING{border-left:3px solid var(--amber)} .alert.WARNING .sev{background:var(--amberbg);color:var(--amber)}
   .alert.INFO{border-left:3px solid var(--blue)} .alert.INFO .sev{background:rgba(88,166,255,.12);color:var(--blue)}
-  .alert .ent{font-weight:600;min-width:120px}
+  .alert .ent{font-weight:600;min-width:160px}
   .alert .det{color:var(--muted);flex:1}
-  .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  @media(max-width:720px){.charts{grid-template-columns:1fr}}
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+  @media(max-width:720px){.charts{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}}
   .chartbox{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;height:260px}
   .chartbox h3{margin:0 0 10px;font-size:13px;color:var(--muted);font-weight:600}
   .cwrap{height:200px;position:relative}
+  .dep{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--amber)}
+  .dep.crit{border-left-color:var(--red)}
+  .dep .t{font-weight:600;font-size:14px;margin-bottom:4px}
+  .dep .d{font-size:13px;color:var(--muted)}
+  .dep .chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;margin-right:8px;background:var(--amberbg);color:var(--amber)}
+  .dep.crit .chip{background:var(--redbg);color:var(--red)}
 </style>
 </head>
 <body>
-  <h1>9shines label - Ad Anomaly Dashboard</h1>
+  <h1>9shines label &mdash; Ad Anomaly Dashboard</h1>
   <div class="sub">7-day actuals vs 30-day normalised baseline &#183; Last updated: <strong id="ts">11 Jun 2026, 09:00 IST</strong></div>
 
   <div class="counts">
-    <div class="pill red"><div class="n">5</div><div class="l">&#128308; Critical</div></div>
-    <div class="pill amber"><div class="n">8</div><div class="l">&#128993; Warning</div></div>
-    <div class="pill blue"><div class="n">2</div><div class="l">&#128309; Info</div></div>
-    <div class="pill green"><div class="n">2</div><div class="l">&#9923; Dependencies</div></div>
+    <div class="pill red"><div class="n">6</div><div class="l">Critical</div></div>
+    <div class="pill amber"><div class="n">8</div><div class="l">Warning</div></div>
+    <div class="pill blue"><div class="n">2</div><div class="l">Info</div></div>
+    <div class="pill green"><div class="n">2</div><div class="l">Dependencies</div></div>
   </div>
 
-  <h2>Meta Ads &mdash; Account Health</h2>
-  <div class="grid" id="metaGrid"></div>
+  <div class="tabs">
+    <button class="tab active" data-tab="meta">Meta Ads <span class="cnt">3</span></button>
+    <button class="tab" data-tab="google">Google Ads <span class="cnt">8</span></button>
+    <button class="tab" data-tab="deps">Discrepancies &amp; Dependencies <span class="cnt" id="depCnt">2</span></button>
+  </div>
 
-  <h2>Google Ads &mdash; Campaign Health</h2>
-  <div class="grid" id="googleGrid"></div>
+  <div class="panel active" id="panel-meta">
+    <h2>Meta Ads &mdash; Account Health (all 3 accounts)</h2>
+    <div class="grid" id="metaGrid"></div>
+    <div class="charts">
+      <div class="chartbox"><h3>ROAS &mdash; Actual vs Baseline</h3><div class="cwrap"><canvas id="mRoas"></canvas></div></div>
+      <div class="chartbox"><h3>CPM &mdash; Actual vs Baseline (&#8377;)</h3><div class="cwrap"><canvas id="mCpm"></canvas></div></div>
+    </div>
+  </div>
 
-  <h2>Active Alerts</h2>
-  <div class="alerts" id="alertList"></div>
+  <div class="panel" id="panel-google">
+    <h2>Google Ads &mdash; Campaign Health</h2>
+    <div class="grid" id="googleGrid"></div>
+    <div class="charts">
+      <div class="chartbox"><h3>ROAS &mdash; Actual vs Baseline</h3><div class="cwrap"><canvas id="gRoas"></canvas></div></div>
+      <div class="chartbox"><h3>CPA deviation %</h3><div class="cwrap"><canvas id="gCpa"></canvas></div></div>
+    </div>
+  </div>
 
-  <h2>Trends</h2>
-  <div class="charts">
-    <div class="chartbox"><h3>ROAS &mdash; Actual vs Baseline</h3><div class="cwrap"><canvas id="roasChart"></canvas></div></div>
-    <div class="chartbox"><h3>Spend (&#8377;, 7-day)</h3><div class="cwrap"><canvas id="spendChart"></canvas></div></div>
-    <div class="chartbox"><h3>CPM &mdash; Actual vs Baseline</h3><div class="cwrap"><canvas id="cpmChart"></canvas></div></div>
-    <div class="chartbox"><h3>Google CPA deviation %</h3><div class="cwrap"><canvas id="cpaChart"></canvas></div></div>
+  <div class="panel" id="panel-deps">
+    <h2>Compound Patterns &mdash; Discrepancies &amp; Dependencies</h2>
+    <div id="depList"></div>
+    <h2>All Active Alerts</h2>
+    <div class="alerts" id="alertList"></div>
   </div>
 
 <script>
 const META = [
   {name:"9 Shine 2023 CL", rag:"GREEN", spend:114996, roas:4.37, roasDev:-6.1, cpm:174.7, cpmDev:-1.4, purch:247, convDev:-12.4, ctr:6.23, ctrDev:2.8, baseRoas:4.66, baseCpm:177.3},
-  {name:"Highgarden 2026", rag:"RED", spend:9196, roas:0.68, roasDev:-19.8, cpm:523.1, cpmDev:79.8, purch:4, convDev:-54.9, ctr:3.31, ctrDev:-53.5, baseRoas:0.85, baseCpm:291.0}
+  {name:"Highgarden 2026", rag:"RED", spend:9196, roas:0.68, roasDev:-19.8, cpm:523.1, cpmDev:79.8, purch:4, convDev:-54.9, ctr:3.31, ctrDev:-53.5, baseRoas:0.85, baseCpm:291.0},
+  {name:"9shines international", rag:"RED", spend:18092, roas:3.40, roasDev:39.6, cpm:726.6, cpmDev:77.0, purch:3, convDev:16.7, ctr:3.38, ctrDev:66.1, baseRoas:2.44, baseCpm:410.4}
 ];
 const GOOGLE = [
-  {name:"RI_TOF P.MAX All-mixed", rag:"GREEN", spend:6629, roas:4.22, roasDev:-16.9, conv:14.1, convDev:9.7, cpa:469, cpaDev:-2.1, baseRoas:5.08, baseCpa:479.5},
-  {name:"RI_TOF P.MAX Comp ATC", rag:"RED", spend:6512, roas:3.88, roasDev:-40.7, conv:10.4, convDev:-39.0, cpa:624, cpaDev:69.8, baseRoas:6.54, baseCpa:367.3},
-  {name:"RI_MOF P.MAX", rag:"AMBER", spend:6341, roas:3.49, roasDev:-35.3, conv:10.0, convDev:-34.3, cpa:635, cpaDev:62.2, baseRoas:5.39, baseCpa:391.6},
-  {name:"RI_TOF Pmax Pluss", rag:"AMBER", spend:4703, roas:5.13, roasDev:-23.0, conv:14.0, convDev:4.2, cpa:336, cpaDev:8.7, baseRoas:6.66, baseCpa:309.1},
-  {name:"RI_MOF Brand Search", rag:"GREEN", spend:4174, roas:11.98, roasDev:16.1, conv:17.9, convDev:37.2, cpa:233, cpaDev:-13.8, baseRoas:10.32, baseCpa:270.8},
-  {name:"Long_Tshirts utube", rag:"GREEN", spend:3872, roas:6.07, roasDev:3.8, conv:12.1, convDev:-9.2, cpa:321, cpaDev:21.8, baseRoas:5.85, baseCpa:263.7},
-  {name:"Utube Sleeveless", rag:"GREEN", spend:3180, roas:6.05, roasDev:32.7, conv:7.1, convDev:5.3, cpa:448, cpaDev:0.2, baseRoas:4.56, baseCpa:446.9},
-  {name:"Short Nighty & T-Shirt", rag:"RED", spend:2964, roas:2.80, roasDev:-50.4, conv:5.4, convDev:-29.7, cpa:547, cpaDev:50.6, baseRoas:5.64, baseCpa:363.3}
+  {name:"RI_TOF P.MAX All-mixed", rag:"GREEN", spend:6629, roas:4.22, roasDev:-16.9, conv:14.1, convDev:9.7, cpa:469, cpaDev:-2.1, baseRoas:5.08},
+  {name:"RI_TOF P.MAX Comp ATC", rag:"RED", spend:6512, roas:3.88, roasDev:-40.7, conv:10.4, convDev:-39.0, cpa:624, cpaDev:69.8, baseRoas:6.54},
+  {name:"RI_MOF P.MAX", rag:"AMBER", spend:6341, roas:3.49, roasDev:-35.3, conv:10.0, convDev:-34.3, cpa:635, cpaDev:62.2, baseRoas:5.39},
+  {name:"RI_TOF Pmax Pluss", rag:"AMBER", spend:4703, roas:5.13, roasDev:-23.0, conv:14.0, convDev:4.2, cpa:336, cpaDev:8.7, baseRoas:6.66},
+  {name:"RI_MOF Brand Search", rag:"GREEN", spend:4174, roas:11.98, roasDev:16.1, conv:17.9, convDev:37.2, cpa:233, cpaDev:-13.8, baseRoas:10.32},
+  {name:"Long_Tshirts utube", rag:"GREEN", spend:3872, roas:6.07, roasDev:3.8, conv:12.1, convDev:-9.2, cpa:321, cpaDev:21.8, baseRoas:5.85},
+  {name:"Utube Sleeveless", rag:"GREEN", spend:3180, roas:6.05, roasDev:32.7, conv:7.1, convDev:5.3, cpa:448, cpaDev:0.2, baseRoas:4.56},
+  {name:"Short Nighty & T-Shirt", rag:"RED", spend:2964, roas:2.80, roasDev:-50.4, conv:5.4, convDev:-29.7, cpa:547, cpaDev:50.6, baseRoas:5.64}
+];
+const DEPS = [
+  {crit:false, chip:"CREATIVE FATIGUE", t:"Highgarden 2026 (Meta)", d:"CPM &uarr; 80% + CTR &darr; 53% + ROAS &darr; 20% &mdash; classic creative-fatigue signal. Refresh creatives."},
+  {crit:false, chip:"BUDGET EXHAUSTION", t:"RI_MOF P.MAX (Google)", d:"Impression share &darr; 56% + ROAS &darr; 35% &mdash; campaign likely budget-capped. Review daily budget / bids."}
 ];
 const ALERTS = [
   {plat:"Meta", ent:"Highgarden 2026", sev:"CRITICAL", det:"ROAS 0.68x &mdash; below 1.0x absolute floor"},
   {plat:"Meta", ent:"Highgarden 2026", sev:"CRITICAL", det:"CPM spike +79.8% vs baseline"},
   {plat:"Meta", ent:"Highgarden 2026", sev:"CRITICAL", det:"Purchases down 54.9%"},
+  {plat:"Meta", ent:"9shines international", sev:"CRITICAL", det:"CPM spike +77.0% vs baseline"},
   {plat:"Meta", ent:"Highgarden 2026", sev:"WARNING", det:"CTR drop 53.5%"},
-  {plat:"Meta", ent:"Highgarden 2026", sev:"WARNING", det:"&#9923; Creative fatigue: CPM&uarr; + CTR&darr; + ROAS&darr;"},
   {plat:"Google", ent:"RI_TOF P.MAX Comp ATC", sev:"CRITICAL", det:"ROAS drop 40.7% (6.54&#8594;3.88x)"},
-  {plat:"Google", ent:"RI_TOF P.MAX Comp ATC", sev:"WARNING", det:"CPA up 69.8%"},
   {plat:"Google", ent:"Short Nighty & T-Shirt", sev:"CRITICAL", det:"ROAS drop 50.4% (5.64&#8594;2.80x)"},
+  {plat:"Google", ent:"RI_TOF P.MAX Comp ATC", sev:"WARNING", det:"CPA up 69.8%"},
   {plat:"Google", ent:"Short Nighty & T-Shirt", sev:"WARNING", det:"CPA up 50.6%"},
   {plat:"Google", ent:"RI_MOF P.MAX", sev:"WARNING", det:"ROAS drop 35.3%"},
   {plat:"Google", ent:"RI_MOF P.MAX", sev:"WARNING", det:"CPA up 62.2%"},
-  {plat:"Google", ent:"RI_MOF P.MAX", sev:"WARNING", det:"&#9923; Budget exhaustion: impr-share&darr; + ROAS&darr;"},
   {plat:"Google", ent:"RI_TOF Pmax Pluss", sev:"WARNING", det:"ROAS drop 23.0%"},
   {plat:"Google", ent:"RI_TOF P.MAX All-mixed", sev:"INFO", det:"ROAS drop 16.9%"},
   {plat:"Google", ent:"RI_MOF Brand Search", sev:"INFO", det:"Spend change +18.3%"}
 ];
 
+function inr(n){ return "&#8377;"+ (n>=1000 ? (n/1000).toFixed(1)+"k" : n.toFixed(0)); }
 function devClass(v){ return v>2?"up":(v<-2?"down":"neutral"); }
 function devStr(v){ return (v>0?"+":"")+v.toFixed(1)+"%"; }
 
@@ -120,7 +153,7 @@ function metaCard(m){
     <div class="name"><span>${m.name}</span><span class="badge ${m.rag}">${m.rag}</span></div>
     <div class="metrics">
       <div class="m"><span>ROAS</span><b>${m.roas.toFixed(2)}x <span class="dev ${devClass(m.roasDev)}">${devStr(m.roasDev)}</span></b></div>
-      <div class="m"><span>Spend</span><b>&#8377;${(m.spend/1000).toFixed(1)}k</b></div>
+      <div class="m"><span>Spend</span><b>${inr(m.spend)}</b></div>
       <div class="m"><span>CPM</span><b>&#8377;${m.cpm.toFixed(0)} <span class="dev ${devClass(-m.cpmDev)}">${devStr(m.cpmDev)}</span></b></div>
       <div class="m"><span>Purchases</span><b>${m.purch} <span class="dev ${devClass(m.convDev)}">${devStr(m.convDev)}</span></b></div>
       <div class="m"><span>CTR</span><b>${m.ctr.toFixed(2)}% <span class="dev ${devClass(m.ctrDev)}">${devStr(m.ctrDev)}</span></b></div>
@@ -131,42 +164,54 @@ function gCard(g){
     <div class="name"><span>${g.name}</span><span class="badge ${g.rag}">${g.rag}</span></div>
     <div class="metrics">
       <div class="m"><span>ROAS</span><b>${g.roas.toFixed(2)}x <span class="dev ${devClass(g.roasDev)}">${devStr(g.roasDev)}</span></b></div>
-      <div class="m"><span>Spend</span><b>&#8377;${(g.spend/1000).toFixed(1)}k</b></div>
+      <div class="m"><span>Spend</span><b>${inr(g.spend)}</b></div>
       <div class="m"><span>Conv</span><b>${g.conv.toFixed(1)} <span class="dev ${devClass(g.convDev)}">${devStr(g.convDev)}</span></b></div>
       <div class="m"><span>CPA</span><b>&#8377;${g.cpa.toFixed(0)} <span class="dev ${devClass(-g.cpaDev)}">${devStr(g.cpaDev)}</span></b></div>
     </div></div>`;
 }
 document.getElementById("metaGrid").innerHTML = META.map(metaCard).join("");
 document.getElementById("googleGrid").innerHTML = GOOGLE.map(gCard).join("");
+document.getElementById("depList").innerHTML = DEPS.map(d=>
+  `<div class="dep ${d.crit?'crit':''}"><div class="t"><span class="chip">${d.chip}</span>${d.t}</div><div class="d">${d.d}</div></div>`
+).join("");
 document.getElementById("alertList").innerHTML = ALERTS.map(a=>
   `<div class="alert ${a.sev}"><span class="sev">${a.sev}</span><span class="ent">${a.plat} &#183; ${a.ent}</span><span class="det">${a.det}</span></div>`
 ).join("");
+document.getElementById("depCnt").textContent = DEPS.length;
+
+let charts={};
+document.querySelectorAll(".tab").forEach(t=>{
+  t.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    document.getElementById("panel-"+t.dataset.tab).classList.add("active");
+    renderCharts(t.dataset.tab);
+  });
+});
 
 const ax={scales:{y:{ticks:{color:"#8b949e"},grid:{color:"#21262d"}},x:{ticks:{color:"#8b949e"},grid:{display:false}}},plugins:{legend:{labels:{color:"#e6edf3"}}},responsive:true,maintainAspectRatio:false};
-const allNames=[...META.map(m=>m.name.split(" ")[0]), ...GOOGLE.map(g=>g.name.slice(0,10))];
-
-new Chart(document.getElementById("roasChart"),{type:"bar",data:{
-  labels:[...META,...GOOGLE].map(x=>x.name.length>14?x.name.slice(0,12)+"&hellip;":x.name),
-  datasets:[
-    {label:"Actual",data:[...META,...GOOGLE].map(x=>x.roas),backgroundColor:"#58a6ff"},
-    {label:"Baseline",data:[...META.map(m=>m.baseRoas),...GOOGLE.map(g=>g.baseRoas)],backgroundColor:"#484f58"}
-  ]},options:ax});
-
-new Chart(document.getElementById("spendChart"),{type:"bar",data:{
-  labels:[...META,...GOOGLE].map(x=>x.name.length>14?x.name.slice(0,12)+"&hellip;":x.name),
-  datasets:[{label:"Spend &#8377;",data:[...META,...GOOGLE].map(x=>x.spend),backgroundColor:"#3fb950"}]},options:ax});
-
-new Chart(document.getElementById("cpmChart"),{type:"bar",data:{
-  labels:META.map(m=>m.name.split(" ")[0]),
-  datasets:[
-    {label:"Actual CPM",data:META.map(m=>m.cpm),backgroundColor:"#f85149"},
-    {label:"Baseline CPM",data:META.map(m=>m.baseCpm),backgroundColor:"#484f58"}
-  ]},options:ax});
-
-new Chart(document.getElementById("cpaChart"),{type:"bar",data:{
-  labels:GOOGLE.map(g=>g.name.slice(0,12)),
-  datasets:[{label:"CPA dev %",data:GOOGLE.map(g=>g.cpaDev),
-    backgroundColor:GOOGLE.map(g=>g.cpaDev>30?"#f85149":(g.cpaDev>0?"#d29922":"#3fb950"))}]},options:ax});
+function mk(id,cfg){ if(charts[id])return; const el=document.getElementById(id); if(el) charts[id]=new Chart(el,cfg); }
+function clip(s,n){ return s.length>n ? s.slice(0,n)+"…" : s; }
+function renderCharts(tab){
+  if(tab==="meta"){
+    mk("mRoas",{type:"bar",data:{labels:META.map(m=>clip(m.name,13)),
+      datasets:[{label:"Actual",data:META.map(m=>m.roas),backgroundColor:"#58a6ff"},
+                {label:"Baseline",data:META.map(m=>m.baseRoas),backgroundColor:"#484f58"}]},options:ax});
+    mk("mCpm",{type:"bar",data:{labels:META.map(m=>clip(m.name,13)),
+      datasets:[{label:"Actual CPM",data:META.map(m=>m.cpm),backgroundColor:"#f85149"},
+                {label:"Baseline CPM",data:META.map(m=>m.baseCpm),backgroundColor:"#484f58"}]},options:ax});
+  }
+  if(tab==="google"){
+    mk("gRoas",{type:"bar",data:{labels:GOOGLE.map(g=>clip(g.name,11)),
+      datasets:[{label:"Actual",data:GOOGLE.map(g=>g.roas),backgroundColor:"#58a6ff"},
+                {label:"Baseline",data:GOOGLE.map(g=>g.baseRoas),backgroundColor:"#484f58"}]},options:ax});
+    mk("gCpa",{type:"bar",data:{labels:GOOGLE.map(g=>clip(g.name,11)),
+      datasets:[{label:"CPA dev %",data:GOOGLE.map(g=>g.cpaDev),
+        backgroundColor:GOOGLE.map(g=>g.cpaDev>30?"#f85149":(g.cpaDev>0?"#d29922":"#3fb950"))}]},options:ax});
+  }
+}
+renderCharts("meta");
 </script>
 </body>
 </html>
