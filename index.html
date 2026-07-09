@@ -2,465 +2,970 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>9shines label — Ad Anomaly Dashboard | 2026-07-06</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>9shines label &mdash; Ad Anomaly Dashboard 2026-07-09</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#0d0f14;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px}
-header{background:#13161e;border-bottom:1px solid #1e2330;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
-header h1{font-size:16px;font-weight:600;color:#a78bfa;letter-spacing:.5px}
-header .meta{font-size:12px;color:#64748b}
-.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600}
-.RED{background:#7f1d1d;color:#fca5a5}.AMBER{background:#78350f;color:#fcd34d}.GREEN{background:#14532d;color:#86efac}.INFO{background:#1e3a5f;color:#93c5fd}.CRITICAL{background:#7f1d1d;color:#fca5a5}.WARNING{background:#78350f;color:#fcd34d}.NEW{background:#1e2d40;color:#7dd3fc}
-nav{background:#13161e;border-bottom:1px solid #1e2330;display:flex;gap:0}
-nav button{background:none;border:none;color:#94a3b8;padding:12px 20px;cursor:pointer;font-size:13px;border-bottom:2px solid transparent;transition:.15s}
-nav button.active{color:#a78bfa;border-bottom-color:#a78bfa}
-nav button:hover{color:#e2e8f0}
-.tab{display:none;padding:20px 24px}
-.tab.active{display:block}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.card{background:#13161e;border:1px solid #1e2330;border-radius:10px;padding:16px}
-.card h3{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
-.kpi{font-size:28px;font-weight:700;color:#e2e8f0;line-height:1}
-.kpi-sub{font-size:12px;color:#64748b;margin-top:4px}
-.kpi-delta{font-size:12px;margin-top:4px}
-.kpi-delta.pos{color:#86efac}.kpi-delta.neg{color:#fca5a5}.kpi-delta.neu{color:#fcd34d}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:#1a1d27;color:#64748b;padding:8px 10px;text-align:left;font-weight:500;text-transform:uppercase;font-size:11px;letter-spacing:.4px;position:sticky;top:0}
-td{padding:7px 10px;border-bottom:1px solid #1a1d27;color:#cbd5e1}
-tr:hover td{background:#1a1d27}
-.tscroll{max-height:380px;overflow-y:auto;border-radius:8px;border:1px solid #1e2330}
-.section-title{font-size:13px;font-weight:600;color:#94a3b8;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #1e2330}
-.alert-row td:first-child{font-weight:600}
-.compound-card{background:#1a1d27;border-left:3px solid #fcd34d;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px}
-.compound-card.crit{border-left-color:#fca5a5}
-.compound-card h4{font-size:12px;font-weight:600;color:#fcd34d;margin-bottom:4px}
-.compound-card.crit h4{color:#fca5a5}
-.compound-card p{font-size:11px;color:#94a3b8;line-height:1.5}
-.action-item{background:#1a1d27;border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
-.action-item .num{background:#1e2330;color:#7dd3fc;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:1px}
-.action-item p{font-size:12px;color:#cbd5e1;line-height:1.5}
-.action-item .acct{font-size:11px;color:#64748b;margin-top:2px}
-.chart-wrap{position:relative;height:220px}
-.stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1a1d27}
-.stat-row:last-child{border-bottom:none}
-.stat-label{font-size:12px;color:#94a3b8}
-.stat-value{font-size:13px;font-weight:600;color:#e2e8f0}
-.updated{font-size:11px;color:#475569;margin-top:16px;text-align:right}
-.dep-badge{font-size:11px;background:#1e2d40;color:#93c5fd;padding:2px 8px;border-radius:4px;display:inline-block}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0f1117;color:#e5e7eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px}
+  .header{background:#1a1d27;border-bottom:1px solid #1f2937;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100}
+  .logo{font-size:16px;font-weight:800;color:#f9fafb;letter-spacing:-.3px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:default}
+  .chip-critical{background:rgba(239,68,68,.2);color:#f87171;border:1px solid #ef4444}
+  .chip-warning{background:rgba(245,158,11,.2);color:#fbbf24;border:1px solid #f59e0b}
+  .chip-info{background:rgba(96,165,250,.2);color:#93c5fd;border:1px solid #3b82f6}
+  .chip-dep{background:rgba(139,92,246,.2);color:#c4b5fd;border:1px solid #8b5cf6}
+  .chip-ts{background:rgba(255,255,255,.05);color:#6b7280;border:1px solid #374151;font-weight:400}
+  .tabs{display:flex;gap:0;background:#1a1d27;border-bottom:1px solid #1f2937;padding:0 24px;overflow-x:auto}
+  .tab{padding:12px 20px;font-size:13px;font-weight:600;color:#6b7280;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .15s}
+  .tab:hover{color:#e5e7eb}
+  .tab.active{color:#6366f1;border-bottom-color:#6366f1}
+  .tab-pane{display:none;padding:24px;max-width:1400px;margin:0 auto}
+  .tab-pane.active{display:block}
+  .section-head{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;margin:24px 0 12px;border-bottom:1px solid #1f2937;padding-bottom:6px}
+  .acc-cards{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+  .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px}
+  .chart-box{background:#1a1d27;border:1px solid #1f2937;border-radius:10px;padding:18px}
+  .chart-box h3{font-size:12px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+  .rag-badge{display:inline-block}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:#111827;color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:.8px;padding:9px 12px;text-align:left;border-bottom:1px solid #1f2937}
+  td{padding:10px 12px;border-bottom:1px solid #111827;color:#d1d5db}
+  tr:hover td{background:rgba(255,255,255,.02)}
+  .chip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:16px 0}
+  .metric-chip{background:#1a1d27;border:1px solid #1f2937;border-radius:8px;padding:14px;text-align:center}
+  .metric-chip .label{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+  .metric-chip .value{font-size:20px;font-weight:800;color:#f9fafb}
+  .metric-chip .sub{font-size:10px;color:#6b7280;margin-top:2px}
+  .banner{background:linear-gradient(135deg,#1e1b4b,#1a1d27);border:1px solid #4f46e5;border-radius:12px;padding:20px;margin-bottom:24px}
+  .banner-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#818cf8;margin-bottom:14px}
+  @media(max-width:700px){.chart-row{grid-template-columns:1fr}.acc-cards{flex-direction:column}}
 </style>
 </head>
 <body>
-<header>
-  <h1>🔍 9shines label — Ad Anomaly Dashboard</h1>
-  <div class="meta">Run: 2026-07-06 09:00 IST &nbsp;|&nbsp; Data: July 5 (yesterday) + 7d/30d baselines &nbsp;|&nbsp; <span class="badge CRITICAL">8 CRITICAL</span> &nbsp;<span class="badge WARNING">2 WARNING</span> &nbsp;<span class="badge INFO">1 INFO</span></div>
-</header>
-<nav>
-  <button class="active" onclick="showTab('meta')">Meta Ads</button>
-  <button onclick="showTab('google')">Google Ads</button>
-  <button onclick="showTab('disc')">Discrepancies</button>
-  <button onclick="showTab('yday')">Yesterday Performance</button>
-  <button onclick="showTab('action')">Action Items</button>
-</nav>
+
+<div class="header">
+  <div>
+    <div class="logo">9shines label &mdash; Ad Anomaly Monitor</div>
+    <div style="font-size:11px;color:#6b7280;margin-top:2px">Run date: 2026-07-09 &nbsp;|&nbsp; Yesterday: 2026-07-08</div>
+  </div>
+  <div class="chips">
+    <span class="chip chip-critical">&#128308; CRITICAL: 10</span>
+    <span class="chip chip-warning">&#128993; WARNING: 9</span>
+    <span class="chip chip-info">&#128309; INFO: 1</span>
+    <span class="chip chip-dep">&#9939; DEPS: 4</span>
+    <span class="chip chip-ts">Updated 2026-07-09 09:00 IST</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('meta',this)">Meta Ads <span style="background:#374151;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:4px">17</span></div>
+  <div class="tab" onclick="showTab('google',this)">Google Ads <span style="background:#374151;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:4px">11</span></div>
+  <div class="tab" onclick="showTab('disc',this)">Discrepancies <span style="background:#374151;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:4px">24</span></div>
+  <div class="tab" onclick="showTab('yest',this)">Yesterday Perf</div>
+  <div class="tab" onclick="showTab('action',this)">&#128680; Action Items <span style="background:#ef4444;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:4px">19</span></div>
+</div>
 
 <!-- TAB 1: META ADS -->
-<div id="tab-meta" class="tab active">
-  <div class="grid3" style="margin-bottom:16px">
-    <div class="card">
-      <h3>9 Shine 2023 CL</h3>
-      <div class="kpi">4.886x <span class="badge GREEN">GREEN</span></div>
-      <div class="kpi-sub">7d ROAS &nbsp;|&nbsp; Spend ₹1,20,237</div>
-      <div class="kpi-delta neu">CPM ₹173 (+8.8% vs 30d) &nbsp;|&nbsp; Purchases 253</div>
+<div id="tab-meta" class="tab-pane active">
+  <div class="section-head">Meta Ads &mdash; Account Health (7d vs 30d Baseline)</div>
+  <div class="acc-cards">
+<div style="background:rgba(34,197,94,.06);border:2px solid #22c55e;border-radius:10px;padding:18px;flex:1;min-width:260px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <span style="font-size:13px;font-weight:700;color:#e5e7eb">9 Shine 2023 CL</span>
+            <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase">ROAS 7d</div>
+              <div style="font-size:22px;font-weight:800;color:#f9fafb">5.19x</div>
+              <div style="font-size:11px"><span style="color:#22c55e">&uarr;1.4%</span> vs 5.12x base</div></div>
+            <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase">SPEND 7d</div>
+              <div style="font-size:18px;font-weight:700;color:#e5e7eb">&#8377;125,389</div></div>
+            <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase">CPM</div>
+              <div style="font-size:16px;font-weight:600;color:#e5e7eb">&#8377;182</div>
+              <div style="font-size:11px"><span style="color:#22c55e">&uarr;15.2%</span></div></div>
+            <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase">PURCHASES</div>
+              <div style="font-size:16px;font-weight:600;color:#e5e7eb">265</div>
+              <div style="font-size:11px;color:#6b7280">CTR 5.78%</div></div>
+          </div>
+        </div>
+<div style="background:rgba(245,158,11,.08);border:2px solid #f59e0b;border-radius:10px;padding:18px;flex:1;min-width:260px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <span style="font-size:13px;font-weight:700;color:#e5e7eb">Highgarden 2026</span>
+            <span class="rag-badge" style="background:#f59e0b;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">AMBER</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase">ROAS 7d</div>
+              <div style="font-size:22px;font-weight:800;color:#f9fafb">3.06x</div>
+              <div style="font-size:11px"><span style="color:#ef4444">&darr;27.1%</span> vs 4.20x base</div></div>
+            <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase">SPEND 7d</div>
+              <div style="font-size:18px;font-weight:700;color:#e5e7eb">&#8377;30,001</div></div>
+            <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase">CPM</div>
+              <div style="font-size:16px;font-weight:600;color:#e5e7eb">&#8377;485</div>
+              <div style="font-size:11px"><span style="color:#22c55e">&uarr;16.0%</span></div></div>
+            <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase">PURCHASES</div>
+              <div style="font-size:16px;font-weight:600;color:#e5e7eb">50</div>
+              <div style="font-size:11px;color:#6b7280">CTR 4.94%</div></div>
+          </div>
+        </div>
+<div style="background:rgba(245,158,11,.08);border:2px solid #f59e0b;border-radius:10px;padding:18px;flex:1;min-width:260px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <span style="font-size:13px;font-weight:700;color:#e5e7eb">9shines international</span>
+            <span class="rag-badge" style="background:#f59e0b;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">AMBER</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase">ROAS 7d</div>
+              <div style="font-size:22px;font-weight:800;color:#f9fafb">1.92x</div>
+              <div style="font-size:11px"><span style="color:#22c55e">&uarr;137.9%</span> vs 0.81x base</div></div>
+            <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase">SPEND 7d</div>
+              <div style="font-size:18px;font-weight:700;color:#e5e7eb">&#8377;18,423</div></div>
+            <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase">CPM</div>
+              <div style="font-size:16px;font-weight:600;color:#e5e7eb">&#8377;1,531</div>
+              <div style="font-size:11px"><span style="color:#22c55e">&uarr;50.4%</span></div></div>
+            <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase">PURCHASES</div>
+              <div style="font-size:16px;font-weight:600;color:#e5e7eb">3</div>
+              <div style="font-size:11px;color:#6b7280">CTR 3.5%</div></div>
+          </div>
+        </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-box">
+      <h3>ROAS &mdash; 7d Actual vs 30d Baseline</h3>
+      <canvas id="metaRoasChart" height="180"></canvas>
     </div>
-    <div class="card">
-      <h3>Highgarden 2026</h3>
-      <div class="kpi">3.830x <span class="badge AMBER">AMBER</span></div>
-      <div class="kpi-sub">7d ROAS &nbsp;|&nbsp; Spend ₹28,806</div>
-      <div class="kpi-delta neg">Spend +46.1% vs baseline &nbsp;|&nbsp; ROAS -11.8%</div>
-    </div>
-    <div class="card">
-      <h3>9shines international</h3>
-      <div class="kpi">0.532x <span class="badge RED">RED</span></div>
-      <div class="kpi-sub">7d ROAS &nbsp;|&nbsp; Spend ₹19,511</div>
-      <div class="kpi-delta neg">ROAS &lt;1.0x — loss-making &nbsp;|&nbsp; CPM +70.2%</div>
+    <div class="chart-box">
+      <h3>CPM &mdash; 7d Actual vs 30d Baseline (&#8377;)</h3>
+      <canvas id="metaCpmChart" height="180"></canvas>
     </div>
   </div>
 
-  <div class="grid2" style="margin-bottom:16px">
-    <div class="card">
-      <h3>7d Spend by Account (₹)</h3>
-      <div class="chart-wrap"><canvas id="metaSpendChart"></canvas></div>
+  <div class="section-head">Meta Campaigns &mdash; All Active (17 campaigns, sorted worst ROAS deviation first)</div>
+<div class="camp-card" style="background:rgba(239,68,68,.12);border:1px solid #ef4444;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">CRITICAL</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">RI_TOF_ASC_DENIM_CO_ORDSET_JUNE_12_2026</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;1.20x</div><div style="font-size:11px"><span style="color:#ef4444">&darr;57.3%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;8,839</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;744</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">5</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(239,68,68,.12);border:1px solid #ef4444;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">CRITICAL</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">RI | TOF | ASC |  NEW | CUSTOMER | SHORT NIGHTY ...</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;2.85x</div><div style="font-size:11px"><span style="color:#ef4444">&darr;48.6%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;5,597</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;356</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">9</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(239,68,68,.12);border:1px solid #ef4444;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">CRITICAL</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">PC_VIDEO_1531MG_14 June_26</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;2.96x</div><div style="font-size:11px"><span style="color:#ef4444">&darr;40.7%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;4,814</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;733</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">5</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(245,158,11,.10);border:1px solid #f59e0b;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#f59e0b;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">AMBER</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">RI_TOF_ASC_Alpine & sleeveless nighty Videos_apr...</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;4.46x</div><div style="font-size:11px"><span style="color:#ef4444">&darr;28.9%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;7,704</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;325</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">13</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(245,158,11,.10);border:1px solid #f59e0b;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#ec4899;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">HG2026</span>
+        <span class="rag-badge" style="background:#f59e0b;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">AMBER</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">BABY_DOLL_VIDEO_(19th_June_26)</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;4.33x</div><div style="font-size:11px"><span style="color:#ef4444">&darr;24.3%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;5,563</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;255</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">15</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#ec4899;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">HG2026</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">All_CAT_Sales_Campaign_(19/06/2026)</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;5.51x</div><div style="font-size:11px"><span style="color:#22c55e">&uarr;2.2%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;6,324</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;490</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">21</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#f97316;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9shines international</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">RI_TOF_NIGHTY_UAE_JUNE_25_2026</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;1.92x</div><div style="font-size:11px"><span style="color:#22c55e">&uarr;14.3%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;18,423</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;1,531</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">3</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">RI_TOF_ASC_SAHELI_MAY_28</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;4.97x</div><div style="font-size:11px"><span style="color:#22c55e">&uarr;25.2%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;5,460</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;592</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">6</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">Tripti_Dimri_Creative_Campaign_(9th June 2026)</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;8.79x</div><div style="font-size:11px"><span style="color:#22c55e">&uarr;51.3%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;4,078</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;480</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">10</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">ASC_MIX_CREATIVES_MAY_15</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;7.69x</div><div style="font-size:11px"><span style="color:#22c55e">&uarr;73.6%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;5,596</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;356</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">12</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#ec4899;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">HG2026</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">BABY_DOLL_CAROUSEL_(14th_June_26)</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;3.64x</div><div style="font-size:11px"><span style="color:#22c55e">&uarr;92.6%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;4,869</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;544</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">6</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">RI_TOF_LOOKALIKE+ASC_MAY_12</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;6.99x</div><div style="font-size:11px"><span style="color:#22c55e">&uarr;294.9%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;5,638</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;384</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">8</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">New_Cst_Sales_Camp_05_06_2026</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;4.88x</div><div style="font-size:11px"><span style="color:#6b7280">NEW</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;2,850</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;604</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">6</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">6_Months_Customers_8th_July_26</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;4.26x</div><div style="font-size:11px"><span style="color:#6b7280">NEW</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;774</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;411</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">2</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">Cst_Store_ Video_Sales_26_June_2026</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;8.94x</div><div style="font-size:11px"><span style="color:#6b7280">NEW</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;5,369</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;186</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">22</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">Cst_Store_ Video_Sales_02_July_26</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;7.62x</div><div style="font-size:11px"><span style="color:#6b7280">NEW</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;3,558</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;227</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">7</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9Shine CL</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">Sales_Campaign_Regal_Collection_8th July</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">&#8377;0.00x</div><div style="font-size:11px"><span style="color:#6b7280">NEW</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;192</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPM</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;449</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">PURCHASES</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">0</div></div>
+      </div>
     </div>
-    <div class="card">
-      <h3>7d ROAS by Account</h3>
-      <div class="chart-wrap"><canvas id="metaRoasChart"></canvas></div>
-    </div>
-  </div>
-
-  <div class="section-title">Campaign Health — 9 Shine 2023 CL (10 campaigns extracted)</div>
-  <div class="tscroll">
-    <table>
-      <thead><tr><th>Status</th><th>Campaign</th><th>7d Spend (₹)</th><th>7d ROAS</th><th>vs Baseline</th><th>Purchases</th><th>CPM</th><th>CTR</th></tr></thead>
-      <tbody id="metaCampTbody"></tbody>
-    </table>
-  </div>
-  <div class="updated">Sheet: <a href="https://docs.google.com/spreadsheets/d/1JWP3YjmqsfgpoF3y40joAsrOU93qWmoXIeVLxdCO-8k" style="color:#7dd3fc" target="_blank">View Google Sheet ↗</a></div>
 </div>
 
 <!-- TAB 2: GOOGLE ADS -->
-<div id="tab-google" class="tab">
-  <div class="grid4" style="margin-bottom:16px">
-    <div class="card">
-      <h3>9shines — 7d ROAS</h3>
-      <div class="kpi">4.70x <span class="badge AMBER">AMBER</span></div>
-      <div class="kpi-sub">vs 6.55x (30d baseline)</div>
-      <div class="kpi-delta neg">-28.2% decline</div>
+<div id="tab-google" class="tab-pane">
+  <div class="section-head">Google Ads &mdash; Campaign Health (7d vs 30d Baseline)</div>
+
+  <div class="chart-row">
+    <div class="chart-box">
+      <h3>ROAS &mdash; 7d Actual vs 30d Baseline</h3>
+      <canvas id="googRoasChart" height="200"></canvas>
     </div>
-    <div class="card">
-      <h3>9shines — 7d Spend</h3>
-      <div class="kpi">₹32,568</div>
-      <div class="kpi-sub">Spend last 7 days</div>
-      <div class="kpi-delta neu">Yd: ₹4,916</div>
-    </div>
-    <div class="card">
-      <h3>9shines — 7d Conversions</h3>
-      <div class="kpi">70.4</div>
-      <div class="kpi-sub">Across 8 campaigns</div>
-      <div class="kpi-delta neu">Yd: 10.1 convs</div>
-    </div>
-    <div class="card">
-      <h3>Highgarden Google</h3>
-      <div class="kpi">N/A <span class="dep-badge">UNAVAILABLE</span></div>
-      <div class="kpi-sub">Cloudflare Worker blocked</div>
-      <div class="kpi-delta neu">Will retry next run</div>
+    <div class="chart-box">
+      <h3>CPA &mdash; 7d Actual vs 30d Baseline (&#8377;)</h3>
+      <canvas id="googCpaChart" height="200"></canvas>
     </div>
   </div>
 
-  <div class="grid2" style="margin-bottom:16px">
-    <div class="card">
-      <h3>Campaign 7d ROAS vs 30d Baseline</h3>
-      <div class="chart-wrap"><canvas id="googleRoasChart"></canvas></div>
+  <div class="section-head">All Google Campaigns (11 campaigns)</div>
+<div class="camp-card" style="background:rgba(239,68,68,.12);border:1px solid #ef4444;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9shines label</span>
+        <span class="rag-badge" style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">CRITICAL</span>
+        <span style="font-size:10px;color:#6b7280">PERFORMANCE_MAX</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">RI_TOF_P.MAX_Catelogue_Comp. All Mixed</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">2.18x</div><div style="font-size:11px"><span style="color:#ef4444">&darr;60.6%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;6,378</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CONV</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">6.4</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPA</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;1,002</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(239,68,68,.12);border:1px solid #ef4444;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9shines label</span>
+        <span class="rag-badge" style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">CRITICAL</span>
+        <span style="font-size:10px;color:#6b7280">DEMAND_GEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">Utube Sleeveless</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">1.86x</div><div style="font-size:11px"><span style="color:#ef4444">&darr;53.6%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;3,066</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CONV</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">2.0</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPA</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;1,530</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(239,68,68,.12);border:1px solid #ef4444;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9shines label</span>
+        <span class="rag-badge" style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">CRITICAL</span>
+        <span style="font-size:10px;color:#6b7280">SEARCH</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">RI_MOF_Brand Search</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">6.64x</div><div style="font-size:11px"><span style="color:#ef4444">&darr;52.5%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;4,321</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CONV</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">16.0</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPA</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;270</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(245,158,11,.10);border:1px solid #f59e0b;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#ec4899;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">Highgarden</span>
+        <span class="rag-badge" style="background:#f59e0b;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">AMBER</span>
+        <span style="font-size:10px;color:#6b7280">PERFORMANCE_MAX</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">Pmax- Denim_Baby Doll</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">1.83x</div><div style="font-size:11px"><span style="color:#ef4444">&darr;38.0%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;3,693</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CONV</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">3.0</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPA</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;1,243</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(245,158,11,.10);border:1px solid #f59e0b;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9shines label</span>
+        <span class="rag-badge" style="background:#f59e0b;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">AMBER</span>
+        <span style="font-size:10px;color:#6b7280">PERFORMANCE_MAX</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">RI_TOF_P.MAX_Catelogue_All mixed</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">3.96x</div><div style="font-size:11px"><span style="color:#ef4444">&darr;35.7%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;6,078</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CONV</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">10.6</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPA</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;571</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(245,158,11,.10);border:1px solid #f59e0b;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9shines label</span>
+        <span class="rag-badge" style="background:#f59e0b;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">AMBER</span>
+        <span style="font-size:10px;color:#6b7280">DEMAND_GEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">Short Nighty & T Shirt</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">3.20x</div><div style="font-size:11px"><span style="color:#ef4444">&darr;28.6%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;2,903</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CONV</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">3.6</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPA</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;802</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9shines label</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+        <span style="font-size:10px;color:#6b7280">PERFORMANCE_MAX</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">RI_TOF_Pmax_Catelogue_Pluss</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">3.00x</div><div style="font-size:11px"><span style="color:#f59e0b">&darr;18.3%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;4,278</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CONV</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">8.1</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPA</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;527</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#ec4899;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">Highgarden</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+        <span style="font-size:10px;color:#6b7280">PERFORMANCE_MAX</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">Pmax (Short Nighty & Tshirts)</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">3.75x</div><div style="font-size:11px"><span style="color:#f59e0b">&darr;5.3%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;4,634</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CONV</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">17.0</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPA</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;273</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#ec4899;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">Highgarden</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+        <span style="font-size:10px;color:#6b7280">PERFORMANCE_MAX</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">PMAX (Pajama Sets)</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">2.14x</div><div style="font-size:11px"><span style="color:#22c55e">&uarr;15.1%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;3,779</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CONV</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">4.0</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPA</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;945</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9shines label</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+        <span style="font-size:10px;color:#6b7280">DEMAND_GEN</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">Long_Tshirts_utube</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">7.23x</div><div style="font-size:11px"><span style="color:#22c55e">&uarr;33.4%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;3,262</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CONV</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">14.7</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPA</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;222</div></div>
+      </div>
+    </div><div class="camp-card" style="background:rgba(34,197,94,.07);border:1px solid #1d4ed8;border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:#6366f1;color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">9shines label</span>
+        <span class="rag-badge" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px">GREEN</span>
+        <span style="font-size:10px;color:#6b7280">PERFORMANCE_MAX</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#e5e7eb;margin-bottom:10px;line-height:1.4">RI_MOF_P.MAX</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div><div style="font-size:10px;color:#9ca3af">ROAS 7d</div><div style="font-size:15px;font-weight:700;color:#f9fafb">8.16x</div><div style="font-size:11px"><span style="color:#22c55e">&uarr;37.1%</span></div></div>
+        <div><div style="font-size:10px;color:#9ca3af">SPEND</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;6,019</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CONV</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">14.8</div></div>
+        <div><div style="font-size:10px;color:#9ca3af">CPA</div><div style="font-size:13px;font-weight:600;color:#e5e7eb">&#8377;407</div></div>
+      </div>
     </div>
-    <div class="card">
-      <h3>Campaign 7d Spend (₹)</h3>
-      <div class="chart-wrap"><canvas id="googleSpendChart"></canvas></div>
-    </div>
-  </div>
-
-  <div class="section-title">Campaign Health — 9shines Google Ads</div>
-  <div class="tscroll">
-    <table>
-      <thead><tr><th>Status</th><th>Campaign</th><th>7d Spend (₹)</th><th>7d ROAS</th><th>30d ROAS</th><th>vs 30d</th><th>7d Convs</th><th>CPA (₹)</th><th>CTR</th></tr></thead>
-      <tbody id="googleCampTbody"></tbody>
-    </table>
-  </div>
 </div>
 
 <!-- TAB 3: DISCREPANCIES -->
-<div id="tab-disc" class="tab">
-  <div class="section-title">Dependency & Data Gaps</div>
-  <div class="compound-card">
-    <h4>⚠ Highgarden Google Ads — Data Unavailable</h4>
-    <p>Cloudflare Worker endpoint <code>https://9shines-google-ads-highgarden.9shineslabel.workers.dev</code> not reachable from this environment (URL not in provenance set). Dashboard shows N/A for all Highgarden Google metrics. Check directly in Google Ads UI or fix Worker CORS/allowlist.</p>
-  </div>
-  <div class="compound-card">
-    <h4>ℹ Meta Campaigns — Partial Extract (9 Shine 2023 CL: 10 of ~15 campaigns)</h4>
-    <p>Raw campaign file exceeded context window during previous session. 10 campaigns extracted for 9 Shine 2023 CL. Highgarden 2026 and 9shines international campaign-level data not extracted (account-level data is complete). This does not affect anomaly detection which uses account-level metrics.</p>
-  </div>
+<div id="tab-disc" class="tab-pane">
+  <div class="section-head">Compound Patterns &amp; Dependencies</div>
+<div style="background:rgba(99,102,241,.08);border:1px solid #4f46e5;border-radius:8px;padding:16px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#f59e0b;color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">DEP &middot; WARNING</span>
+            <span style="color:#a5b4fc;font-size:13px;font-weight:600">Creative Fatigue</span>
+          </div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:4px"><strong style="color:#9ca3af">Account:</strong> Highgarden 2026</div>
+          <div style="font-size:12px;color:#9ca3af">Meta Highgarden: CPM +16%, ROAS -27.1%, CTR flat — audience saturation on Baby Doll & Denim creatives</div>
+        </div>
+<div style="background:rgba(99,102,241,.08);border:1px solid #4f46e5;border-radius:8px;padding:16px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#f59e0b;color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">DEP &middot; WARNING</span>
+            <span style="color:#a5b4fc;font-size:13px;font-weight:600">Budget Pressure / Low IS</span>
+          </div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:4px"><strong style="color:#9ca3af">Account:</strong> 9shines label Google</div>
+          <div style="font-size:12px;color:#9ca3af">RI_TOF_P.MAX_Comp.All Mixed: impression share 23% while ROAS -60.6% — budget being underutilised or competing inefficiently</div>
+        </div>
+<div style="background:rgba(99,102,241,.08);border:1px solid #4f46e5;border-radius:8px;padding:16px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#60a5fa;color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">DEP &middot; INFO</span>
+            <span style="color:#a5b4fc;font-size:13px;font-weight:600">Cross-Channel Demand Drop</span>
+          </div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:4px"><strong style="color:#9ca3af">Account:</strong> Short Nighty / Sleeveless category</div>
+          <div style="font-size:12px;color:#9ca3af">ROAS dropping on both Meta (Alpine -28.9%) and Google (Sleeveless -53.6%, Short Nighty -28.6%) — possible category demand softness</div>
+        </div>
+<div style="background:rgba(99,102,241,.08);border:1px solid #4f46e5;border-radius:8px;padding:16px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#60a5fa;color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">DEP &middot; INFO</span>
+            <span style="color:#a5b4fc;font-size:13px;font-weight:600">Low Conv Volume</span>
+          </div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:4px"><strong style="color:#9ca3af">Account:</strong> 9shines international</div>
+          <div style="font-size:12px;color:#9ca3af">Only 3 purchases on ₹18,423 Meta spend (7d) + 2 Google conv — pixel or attribution issue possible, though ROAS improving vs 30d</div>
+        </div>
 
-  <div class="section-title">Compound Pattern Detection</div>
-  <div class="compound-card crit">
-    <h4>🔴 CRITICAL — Spend Stable + Near-Zero Conversions → Pixel Failure Risk</h4>
-    <p><strong>Account:</strong> 9shines international (Meta) &nbsp;|&nbsp; 7d spend ₹19,511 (+16.8% vs baseline) but only 2 purchases in 7 days, 0 yesterday. Classic symptom of pixel failure or severe audience mismatch. Immediate action: verify pixel on international store, check events manager for event quality warnings.</p>
-  </div>
-  <div class="compound-card crit">
-    <h4>🔴 CRITICAL — Multiple Campaign ROAS Collapse → Systematic Issue</h4>
-    <p><strong>Account:</strong> 9shines Google Ads &nbsp;|&nbsp; 5 of 8 Google campaigns down >40% ROAS vs 30d baseline simultaneously. Could indicate seasonal demand shift (post-Eid, pre-monsoon slowdown), increased competitor bidding, landing page performance issue, or feed quality degradation. All PMax and YouTube campaigns affected.</p>
-  </div>
-  <div class="compound-card">
-    <h4>⚠ WARNING — Spend Scale-Up + ROAS Softening → Audience Saturation Risk</h4>
-    <p><strong>Account:</strong> Highgarden 2026 (Meta) &nbsp;|&nbsp; Spend +46% vs 7d baseline (₹28,806 vs ₹19,721 norm) while ROAS dropped from 4.34x to 3.83x. Scaling into diminishing returns territory. Consider frequency caps, audience refresh, or creative rotation.</p>
-  </div>
-
-  <div class="section-title">Channel vs Shopify Revenue Reconciliation (July 5)</div>
-  <div class="grid2">
-    <div class="card">
-      <h3>Ad-Attributed Revenue</h3>
-      <div class="stat-row"><span class="stat-label">Meta (all 3 accounts)</span><span class="stat-value">₹88,878</span></div>
-      <div class="stat-row"><span class="stat-label">Google 9shines</span><span class="stat-value">₹15,859</span></div>
-      <div class="stat-row"><span class="stat-label">Google Highgarden</span><span class="stat-value">N/A</span></div>
-      <div class="stat-row"><span class="stat-label">Total attributed</span><span class="stat-value">₹1,04,738</span></div>
-    </div>
-    <div class="card">
-      <h3>Shopify Actual Orders</h3>
-      <div class="stat-row"><span class="stat-label">Total orders</span><span class="stat-value">27</span></div>
-      <div class="stat-row"><span class="stat-label">Total revenue</span><span class="stat-value">₹58,330</span></div>
-      <div class="stat-row"><span class="stat-label">New customer revenue</span><span class="stat-value">₹31,429 (16 orders)</span></div>
-      <div class="stat-row"><span class="stat-label">Existing customer revenue</span><span class="stat-value">₹26,901 (11 orders)</span></div>
-      <div class="stat-row"><span class="stat-label">Attribution note</span><span class="stat-value" style="color:#fcd34d;font-size:11px">Meta uses view-through; actual cash revenue is Shopify figure</span></div>
-    </div>
-  </div>
+  <div class="section-head">All Active Alerts (20 total)</div>
+<div style="background:rgba(239,68,68,.08);border-left:3px solid #ef4444;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#ef4444;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">CRITICAL</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Meta &middot; 9 Shine 2023 CL</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">RI | TOF | ASC |  NEW | CUSTOMER | SHORT NIGHTY |  MAY | 22</div>
+          <div style="font-size:11px;color:#6b7280">Campaign ROAS dropped -48.6% | 7d: 2.85 | Base: 5.54 | Dev: <strong style="color:#ef4444">-48.6%</strong></div>
+        </div>
+<div style="background:rgba(239,68,68,.08);border-left:3px solid #ef4444;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#ef4444;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">CRITICAL</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Meta &middot; 9 Shine 2023 CL</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">RI_TOF_ASC_DENIM_CO_ORDSET_JUNE_12_2026</div>
+          <div style="font-size:11px;color:#6b7280">Campaign ROAS dropped -57.3% | 7d: 1.20 | Base: 2.81 | Dev: <strong style="color:#ef4444">-57.3%</strong></div>
+        </div>
+<div style="background:rgba(239,68,68,.08);border-left:3px solid #ef4444;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#ef4444;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">CRITICAL</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Meta &middot; 9 Shine 2023 CL</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">PC_VIDEO_1531MG_14 June_26</div>
+          <div style="font-size:11px;color:#6b7280">Campaign ROAS dropped -40.7% | 7d: 2.96 | Base: 4.99 | Dev: <strong style="color:#ef4444">-40.7%</strong></div>
+        </div>
+<div style="background:rgba(239,68,68,.08);border-left:3px solid #ef4444;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#ef4444;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">CRITICAL</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Google &middot; 9shines label</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">RI_TOF_P.MAX_Catelogue_Comp. All Mixed</div>
+          <div style="font-size:11px;color:#6b7280">Campaign ROAS dropped -60.6% | 7d: 2.18 | Base: 5.53 | Dev: <strong style="color:#ef4444">-60.6%</strong></div>
+        </div>
+<div style="background:rgba(239,68,68,.08);border-left:3px solid #ef4444;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#ef4444;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">CRITICAL</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Google &middot; 9shines label</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; CPA</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">RI_TOF_P.MAX_Catelogue_Comp. All Mixed</div>
+          <div style="font-size:11px;color:#6b7280">CPA spiked +106.2% vs baseline | 7d: 1002 | Base: 486 | Dev: <strong style="color:#ef4444">+106.2%</strong></div>
+        </div>
+<div style="background:rgba(239,68,68,.08);border-left:3px solid #ef4444;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#ef4444;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">CRITICAL</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Google &middot; 9shines label</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">Utube Sleeveless</div>
+          <div style="font-size:11px;color:#6b7280">Campaign ROAS dropped -53.6% | 7d: 1.86 | Base: 4.01 | Dev: <strong style="color:#ef4444">-53.6%</strong></div>
+        </div>
+<div style="background:rgba(239,68,68,.08);border-left:3px solid #ef4444;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#ef4444;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">CRITICAL</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Google &middot; 9shines label</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; CPA</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">Utube Sleeveless</div>
+          <div style="font-size:11px;color:#6b7280">CPA spiked +231.2% vs baseline | 7d: 1530 | Base: 462 | Dev: <strong style="color:#ef4444">+231.2%</strong></div>
+        </div>
+<div style="background:rgba(239,68,68,.08);border-left:3px solid #ef4444;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#ef4444;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">CRITICAL</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Google &middot; 9shines label</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">RI_MOF_Brand Search</div>
+          <div style="font-size:11px;color:#6b7280">Campaign ROAS dropped -52.5% | 7d: 6.64 | Base: 13.97 | Dev: <strong style="color:#ef4444">-52.5%</strong></div>
+        </div>
+<div style="background:rgba(239,68,68,.08);border-left:3px solid #ef4444;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#ef4444;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">CRITICAL</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Google &middot; 9shines label</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; CPA</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">Short Nighty & T Shirt</div>
+          <div style="font-size:11px;color:#6b7280">CPA spiked +118.5% vs baseline | 7d: 802 | Base: 367 | Dev: <strong style="color:#ef4444">+118.5%</strong></div>
+        </div>
+<div style="background:rgba(239,68,68,.08);border-left:3px solid #ef4444;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#ef4444;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">CRITICAL</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Google &middot; Highgarden</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; CPA</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">Pmax- Denim_Baby Doll</div>
+          <div style="font-size:11px;color:#6b7280">CPA spiked +125.6% vs baseline | 7d: 1243 | Base: 551 | Dev: <strong style="color:#ef4444">+125.6%</strong></div>
+        </div>
+<div style="background:rgba(245,158,11,.06);border-left:3px solid #f59e0b;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#f59e0b;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">WARNING</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Meta &middot; Highgarden 2026</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">(Account)</div>
+          <div style="font-size:11px;color:#6b7280">Account ROAS down -27.1% vs 30d baseline | 7d: 3.06 | Base: 4.20 | Dev: <strong style="color:#f59e0b">-27.1%</strong></div>
+        </div>
+<div style="background:rgba(245,158,11,.06);border-left:3px solid #f59e0b;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#f59e0b;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">WARNING</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Meta &middot; 9shines international</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; CPM</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">(Account)</div>
+          <div style="font-size:11px;color:#6b7280">CPM spiked +50.4% vs 30d baseline | 7d: 1531 | Base: 1018 | Dev: <strong style="color:#f59e0b">+50.4%</strong></div>
+        </div>
+<div style="background:rgba(245,158,11,.06);border-left:3px solid #f59e0b;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#f59e0b;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">WARNING</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Meta &middot; 9 Shine 2023 CL</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">RI_TOF_ASC_Alpine & sleeveless nighty Videos_april_13</div>
+          <div style="font-size:11px;color:#6b7280">Campaign ROAS down -28.9% | 7d: 4.46 | Base: 6.27 | Dev: <strong style="color:#f59e0b">-28.9%</strong></div>
+        </div>
+<div style="background:rgba(245,158,11,.06);border-left:3px solid #f59e0b;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#f59e0b;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">WARNING</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Meta &middot; Highgarden 2026</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">BABY_DOLL_VIDEO_(19th_June_26)</div>
+          <div style="font-size:11px;color:#6b7280">Campaign ROAS down -24.3% | 7d: 4.33 | Base: 5.72 | Dev: <strong style="color:#f59e0b">-24.3%</strong></div>
+        </div>
+<div style="background:rgba(245,158,11,.06);border-left:3px solid #f59e0b;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#f59e0b;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">WARNING</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Meta &middot; 9shines international</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; CPM</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">RI_TOF_NIGHTY_UAE_JUNE_25_2026</div>
+          <div style="font-size:11px;color:#6b7280">CPM spiked +50.4% | 7d: 1531 | Base: 1018 | Dev: <strong style="color:#f59e0b">+50.4%</strong></div>
+        </div>
+<div style="background:rgba(245,158,11,.06);border-left:3px solid #f59e0b;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#f59e0b;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">WARNING</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Google &middot; 9shines label</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">RI_TOF_P.MAX_Catelogue_All mixed</div>
+          <div style="font-size:11px;color:#6b7280">Campaign ROAS down -35.7% | 7d: 3.96 | Base: 6.16 | Dev: <strong style="color:#f59e0b">-35.7%</strong></div>
+        </div>
+<div style="background:rgba(245,158,11,.06);border-left:3px solid #f59e0b;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#f59e0b;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">WARNING</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Google &middot; 9shines label</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; CPA</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">RI_TOF_P.MAX_Catelogue_All mixed</div>
+          <div style="font-size:11px;color:#6b7280">CPA up +49.1% vs baseline | 7d: 571 | Base: 383 | Dev: <strong style="color:#f59e0b">+49.1%</strong></div>
+        </div>
+<div style="background:rgba(245,158,11,.06);border-left:3px solid #f59e0b;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#f59e0b;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">WARNING</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Google &middot; 9shines label</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">Short Nighty & T Shirt</div>
+          <div style="font-size:11px;color:#6b7280">Campaign ROAS down -28.6% | 7d: 3.20 | Base: 4.48 | Dev: <strong style="color:#f59e0b">-28.6%</strong></div>
+        </div>
+<div style="background:rgba(245,158,11,.06);border-left:3px solid #f59e0b;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#f59e0b;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">WARNING</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Google &middot; Highgarden</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">Pmax- Denim_Baby Doll</div>
+          <div style="font-size:11px;color:#6b7280">Campaign ROAS down -38.0% | 7d: 1.83 | Base: 2.95 | Dev: <strong style="color:#f59e0b">-38.0%</strong></div>
+        </div>
+<div style="background:rgba(96,165,250,.05);border-left:3px solid #60a5fa;border-radius:4px;padding:10px 14px;margin-bottom:8px">
+          <span style="background:#60a5fa;color:#000;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">INFO</span>
+          <span style="color:#9ca3af;font-size:11px;margin-left:8px">Google &middot; 9shines label</span>
+          <span style="color:#6b7280;font-size:11px"> &middot; ROAS</span>
+          <div style="font-size:12px;color:#e5e7eb;margin-top:4px">RI_TOF_Pmax_Catelogue_Pluss</div>
+          <div style="font-size:11px;color:#6b7280">Campaign ROAS dip -18.3% | 7d: 3.00 | Base: 3.67 | Dev: <strong style="color:#60a5fa">-18.3%</strong></div>
+        </div>
 </div>
 
 <!-- TAB 4: YESTERDAY PERFORMANCE -->
-<div id="tab-yday" class="tab">
-  <div class="grid4" style="margin-bottom:16px">
-    <div class="card">
-      <h3>Blended ROAS</h3>
-      <div class="kpi">3.17x</div>
-      <div class="kpi-sub">All channels, July 5</div>
-    </div>
-    <div class="card">
-      <h3>Total Spend</h3>
-      <div class="kpi">₹33,032</div>
-      <div class="kpi-sub">Meta ₹28,116 + Google ₹4,916</div>
-    </div>
-    <div class="card">
-      <h3>Total Purchases</h3>
-      <div class="kpi">51.1</div>
-      <div class="kpi-sub">Meta 41 + Google 10.1</div>
-    </div>
-    <div class="card">
-      <h3>Blended CPA</h3>
-      <div class="kpi">₹646</div>
-      <div class="kpi-sub">ASP: ₹2,050</div>
+<div id="tab-yest" class="tab-pane">
+  <div class="banner">
+    <div class="banner-title">Consolidated Performance &mdash; Yesterday (2026-07-08)</div>
+    <div class="chip-grid">
+      <div class="metric-chip"><div class="label">Total Spend</div><div class="value">&#8377;32,961</div><div class="sub">Meta + Google</div></div>
+      <div class="metric-chip"><div class="label">Attributed Revenue</div><div class="value">&#8377;179,582</div><div class="sub">All channels</div></div>
+      <div class="metric-chip"><div class="label">Total Purchases</div><div class="value">65</div><div class="sub">Meta + Google Conv</div></div>
+      <div class="metric-chip"><div class="label">Blended ROAS</div><div class="value" style="color:#22c55e">5.45x</div><div class="sub">Rev &divide; Spend</div></div>
+      <div class="metric-chip"><div class="label">CPA</div><div class="value">&#8377;508</div><div class="sub">Spend &divide; Purchases</div></div>
+      <div class="metric-chip"><div class="label">ASP / AOV</div><div class="value">&#8377;2,767</div><div class="sub">Rev &divide; Purchases</div></div>
+      <div class="metric-chip"><div class="label">Intl Orders</div><div class="value">2</div><div class="sub">9shines intl</div></div>
+      <div class="metric-chip"><div class="label">New Cust Rev</div><div class="value">&#8377;67,671</div><div class="sub">Shopify &middot; 16 orders</div></div>
+      <div class="metric-chip"><div class="label">Existing Cust Rev</div><div class="value">&#8377;33,096</div><div class="sub">Shopify &middot; 14 orders</div></div>
     </div>
   </div>
 
-  <div class="grid2" style="margin-bottom:16px">
-    <div class="card">
-      <h3>Yesterday — Spend by Account (₹)</h3>
-      <div class="chart-wrap"><canvas id="ydSpendChart"></canvas></div>
-    </div>
-    <div class="card">
-      <h3>Yesterday — ROAS by Account</h3>
-      <div class="chart-wrap"><canvas id="ydRoasChart"></canvas></div>
-    </div>
-  </div>
+  <div class="section-head">Meta Ads &mdash; Yesterday (2026-07-08)</div>
+  <table>
+    <thead><tr><th>ACCOUNT</th><th>ROAS</th><th>SPEND</th><th>PURCHASES</th><th>CPM</th><th>CTR</th><th>ATC</th><th>CHECKOUTS</th></tr></thead>
+    <tbody><tr>
+          <td>9 Shine 2023 CL</td>
+          <td style="color:#22c55e;font-weight:700">5.74x</td>
+          <td>&#8377;19,613</td>
+          <td>43</td>
+          <td>&#8377;192</td>
+          <td>5.78%</td>
+          <td>326</td>
+          <td>168</td>
+        </tr>
+<tr>
+          <td>Highgarden 2026</td>
+          <td style="color:#22c55e;font-weight:700">2.05x</td>
+          <td>&#8377;4,137</td>
+          <td>5</td>
+          <td>&#8377;505</td>
+          <td>4.94%</td>
+          <td>21</td>
+          <td>8</td>
+        </tr>
+<tr>
+          <td>9shines international</td>
+          <td style="color:#22c55e;font-weight:700">12.80x</td>
+          <td>&#8377;2,551</td>
+          <td>2</td>
+          <td>&#8377;1,190</td>
+          <td>3.5%</td>
+          <td>12</td>
+          <td>1</td>
+        </tr></tbody>
+  </table>
 
-  <div class="section-title">Account Breakdown — July 5, 2026</div>
-  <div class="tscroll">
-    <table>
-      <thead><tr><th>Platform</th><th>Account</th><th>Spend (₹)</th><th>ROAS</th><th>Purchases/Convs</th><th>Revenue (₹)</th><th>CPM (₹)</th><th>CTR</th><th>ATCs</th><th>Chk Ini</th></tr></thead>
-      <tbody>
-        <tr><td>Meta</td><td>9 Shine 2023 CL</td><td>20,174.81</td><td><span class="badge GREEN">3.619x</span></td><td>32</td><td>73,011.20</td><td>182.93</td><td>5.43%</td><td>332</td><td>146</td></tr>
-        <tr><td>Meta</td><td>Highgarden 2026</td><td>4,662.00</td><td><span class="badge AMBER">3.404x</span></td><td>9</td><td>15,867.45</td><td>521.89</td><td>4.75%</td><td>33</td><td>18</td></tr>
-        <tr><td>Meta</td><td>9shines international</td><td>3,278.70</td><td><span class="badge RED">0.00x</span></td><td>0</td><td>0</td><td>1,662.63</td><td>3.60%</td><td>10</td><td>2</td></tr>
-        <tr><td>Google</td><td>9shines</td><td>4,916.20</td><td><span class="badge GREEN">3.23x</span></td><td>10.1</td><td>15,859.11</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-        <tr><td>Google</td><td>Highgarden</td><td colspan="9" style="color:#64748b">UNAVAILABLE — data gap</td></tr>
-        <tr style="background:#1a1d27"><td colspan="2"><strong>COMBINED</strong></td><td><strong>33,031.71</strong></td><td><strong>3.17x</strong></td><td><strong>51.1</strong></td><td><strong>1,04,737.76</strong></td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <div class="section-head" style="margin-top:24px">Google Ads &mdash; Yesterday (2026-07-08)</div>
+  <table>
+    <thead><tr><th>ACCOUNT</th><th>ROAS</th><th>SPEND</th><th>CONVERSIONS</th><th>CPA</th><th>CTR</th></tr></thead>
+    <tbody><tr>
+          <td>9shines label</td>
+          <td style="color:#22c55e;font-weight:700">4.48x</td>
+          <td>&#8377;5,024</td>
+          <td>10.9</td>
+          <td>&#8377;461</td>
+          <td>N/A</td>
+        </tr>
+<tr>
+          <td>Highgarden</td>
+          <td style="color:#22c55e;font-weight:700">2.07x</td>
+          <td>&#8377;1,636</td>
+          <td>4.0</td>
+          <td>&#8377;409</td>
+          <td>N/A</td>
+        </tr></tbody>
+  </table>
 
-  <div class="section-title">Shopify New vs Existing Customers — July 5</div>
-  <div class="grid2">
-    <div class="card">
-      <h3>Customer Split</h3>
-      <div class="chart-wrap" style="height:180px"><canvas id="custSplitChart"></canvas></div>
+  <div class="section-head" style="margin-top:24px">Shopify &mdash; New vs Existing Customers</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:12px">
+    <div class="chart-box" style="text-align:center">
+      <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px">Total Orders</div>
+      <div style="font-size:28px;font-weight:800;color:#f9fafb;margin:8px 0">30</div>
+      <div style="font-size:12px;color:#6b7280">&#8377;100,767 total revenue</div>
     </div>
-    <div class="card">
-      <h3>Revenue Split</h3>
-      <div class="stat-row"><span class="stat-label">New customer revenue</span><span class="stat-value" style="color:#86efac">₹31,429 (16 orders, 59.3%)</span></div>
-      <div class="stat-row"><span class="stat-label">Existing customer revenue</span><span class="stat-value" style="color:#93c5fd">₹26,901 (11 orders, 40.7%)</span></div>
-      <div class="stat-row"><span class="stat-label">New customer AOV</span><span class="stat-value">₹1,964</span></div>
-      <div class="stat-row"><span class="stat-label">Existing customer AOV</span><span class="stat-value">₹2,446</span></div>
-      <div class="stat-row"><span class="stat-label">Total Shopify revenue</span><span class="stat-value">₹58,330 (27 orders)</span></div>
+    <div class="chart-box" style="text-align:center;border-color:#22c55e">
+      <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px">New Customers</div>
+      <div style="font-size:28px;font-weight:800;color:#22c55e;margin:8px 0">16</div>
+      <div style="font-size:12px;color:#6b7280">&#8377;67,671 revenue</div>
+    </div>
+    <div class="chart-box" style="text-align:center;border-color:#6366f1">
+      <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px">Existing Customers</div>
+      <div style="font-size:28px;font-weight:800;color:#a5b4fc;margin:8px 0">14</div>
+      <div style="font-size:12px;color:#6b7280">&#8377;33,096 revenue</div>
     </div>
   </div>
 </div>
 
 <!-- TAB 5: ACTION ITEMS -->
-<div id="tab-action" class="tab">
-  <div class="grid2" style="margin-bottom:20px">
-    <div class="card">
-      <h3>RAG Summary</h3>
-      <div class="stat-row"><span class="stat-label">🔴 CRITICAL anomalies</span><span class="stat-value" style="color:#fca5a5">8</span></div>
-      <div class="stat-row"><span class="stat-label">🟡 WARNING anomalies</span><span class="stat-value" style="color:#fcd34d">2</span></div>
-      <div class="stat-row"><span class="stat-label">🔵 INFO</span><span class="stat-value" style="color:#93c5fd">1</span></div>
-      <div class="stat-row"><span class="stat-label">🔗 Compound patterns</span><span class="stat-value" style="color:#fcd34d">3</span></div>
-    </div>
-    <div class="card">
-      <h3>Immediate Priorities</h3>
-      <div class="stat-row"><span class="stat-label">1. Verify pixel — 9shines international</span><span class="badge RED">TODAY</span></div>
-      <div class="stat-row"><span class="stat-label">2. Audit Google 5x ROAS-collapsing campaigns</span><span class="badge RED">TODAY</span></div>
-      <div class="stat-row"><span class="stat-label">3. Review Highgarden spend scale / budget cap</span><span class="badge AMBER">TODAY</span></div>
-      <div class="stat-row"><span class="stat-label">4. Fix Highgarden Google Ads data gap</span><span class="badge AMBER">THIS WEEK</span></div>
-    </div>
+<div id="tab-action" class="tab-pane">
+  <div class="section-head">&#128680; Prioritised Action Items &mdash; 2026-07-09</div>
+  <div style="background:rgba(239,68,68,.07);border:1px solid #7f1d1d;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#fca5a5">
+    <strong>&#9888; 10 CRITICAL alerts require immediate action today.</strong> Estimated budget at risk: <strong>&#8377;33,015/week</strong>
   </div>
-
-  <div class="section-title">🔴 CRITICAL — Immediate Action Required</div>
-  <div class="action-item">
-    <div class="num">1</div>
-    <div>
-      <p><strong>PAUSE or restructure 9shines international Meta campaign.</strong> ROAS 0.532x (7d), 0.00x yesterday with ₹3,279 spend. Account has lost ₹19,511 in 7 days on 2 purchases. Zero conversions yesterday despite high CPM ₹1,663 (+70% vs baseline) = near-certain pixel failure.</p>
-      <div class="acct">Platform: Meta &nbsp;|&nbsp; Account: act_821973860928616 &nbsp;|&nbsp; Action: Go to Events Manager → check pixel events for international store domain</div>
-    </div>
-  </div>
-  <div class="action-item">
-    <div class="num">2</div>
-    <div>
-      <p><strong>Audit RI_TOF_P.MAX_Catelogue_Comp_All_Mixed (Google).</strong> ROAS collapsed from 5.58x (30d) to 2.97x (7d) = -46.8%. Check product feed quality, review asset group creatives, verify no products are disapproved.</p>
-      <div class="acct">Platform: Google &nbsp;|&nbsp; Account: 9shines &nbsp;|&nbsp; Campaign ID: Catalogue_Comp_All_Mixed</div>
-    </div>
-  </div>
-  <div class="action-item">
-    <div class="num">3</div>
-    <div>
-      <p><strong>Audit RI_TOF_P.MAX_Catelogue_All_mixed_No_adcopies (Google).</strong> Worst performer: ROAS 3.05x vs 6.20x baseline = -50.8%. No ad copies in campaign name suggests missing creative assets. Add video + image assets to asset groups immediately.</p>
-      <div class="acct">Platform: Google &nbsp;|&nbsp; Account: 9shines</div>
-    </div>
-  </div>
-  <div class="action-item">
-    <div class="num">4</div>
-    <div>
-      <p><strong>Fix RI_MOF_Brand_Search ROAS drop (Google).</strong> Brand campaign down -56% (6.34x vs 14.40x baseline). This is alarming — check if competitor is bidding on brand terms, verify bidding strategy, check Search Impression Share.</p>
-      <div class="acct">Platform: Google &nbsp;|&nbsp; Account: 9shines &nbsp;|&nbsp; Type: Brand Search</div>
-    </div>
-  </div>
-  <div class="action-item">
-    <div class="num">5</div>
-    <div>
-      <p><strong>Refresh Utube_Sleeveless + Short_Nighty_T_Shirt video campaigns (Google).</strong> Both down >50% ROAS. YouTube video campaigns typically suffer creative fatigue fastest. Upload new 15-30s video variants and test against current.</p>
-      <div class="acct">Platform: Google &nbsp;|&nbsp; Account: 9shines</div>
-    </div>
-  </div>
-  <div class="action-item">
-    <div class="num">6</div>
-    <div>
-      <p><strong>New_Cst_Sales_Camp_05_06_2026 (Meta 9SC) — 0 purchases, ₹335 spend.</strong> New campaign launched June 5 with no results. Spend is low but ROAS = 0. Give it until ₹1,000 spend, then pause if still no conversions.</p>
-      <div class="acct">Platform: Meta &nbsp;|&nbsp; Account: 9 Shine 2023 CL &nbsp;|&nbsp; Campaign ID: 120249166890270388</div>
-    </div>
-  </div>
-
-  <div class="section-title">🟡 WARNING — Monitor & Optimize</div>
-  <div class="action-item">
-    <div class="num">7</div>
-    <div>
-      <p><strong>Highgarden 2026 — spending 46% above baseline with ROAS softening.</strong> 7d spend ₹28,806 vs ₹19,721 baseline. ROAS dropped from 4.34x to 3.83x. If spend is being scaled intentionally, ensure target ROAS bid strategy can keep up. Consider adding ₹5,000/day budget cap.</p>
-      <div class="acct">Platform: Meta &nbsp;|&nbsp; Account: act_1599469047757363</div>
-    </div>
-  </div>
-  <div class="action-item">
-    <div class="num">8</div>
-    <div>
-      <p><strong>Google overall ROAS at -28.2% from 30d baseline.</strong> 5 of 8 campaigns affected — this is systematic, not campaign-specific. Investigate: (a) seasonal demand shift for nightwear/women's apparel in July, (b) landing page speed regression, (c) Google product feed health in Merchant Center.</p>
-      <div class="acct">Platform: Google &nbsp;|&nbsp; Account: 9shines</div>
-    </div>
-  </div>
-
-  <div class="section-title">🔗 Data Infrastructure</div>
-  <div class="action-item">
-    <div class="num">9</div>
-    <div>
-      <p><strong>Fix Highgarden Google Ads Cloudflare Worker.</strong> Worker at <code>https://9shines-google-ads-highgarden.9shineslabel.workers.dev</code> is not accessible from the anomaly detection pipeline (URL not in provenance set). Either update the Worker's CORS/auth settings or migrate to direct Google Ads API call using the same credentials.</p>
-      <div class="acct">Infrastructure &nbsp;|&nbsp; Priority: HIGH (blind spot in Highgarden Google performance)</div>
-    </div>
-  </div>
-
-  <div class="updated">Generated: 2026-07-06 09:00 IST &nbsp;|&nbsp; 9shines label / House of KB &nbsp;|&nbsp; <a href="https://docs.google.com/spreadsheets/d/1JWP3YjmqsfgpoF3y40joAsrOU93qWmoXIeVLxdCO-8k" style="color:#7dd3fc" target="_blank">Full Data Sheet ↗</a></div>
+<div style="background:rgba(239,68,68,.1);border-left:4px solid #ef4444;border-radius:6px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">CRITICAL</span>
+            <span style="color:#e5e7eb;font-size:13px;font-weight:600">RI | TOF | ASC | SHORT NIGHTY | MAY | 22</span>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#f87171">Where:</strong> Meta &middot; 9Shine 2023 CL</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#f87171">What:</strong> ROAS -48.6% (2.85x vs 5.54x baseline)</div>
+          <div style="font-size:12px;color:#fbbf24;margin-bottom:4px"><strong>&#8594; Action:</strong> Pause this campaign immediately. Refresh short nighty creatives or shift budget to Cst_Store_Video_Sales which is performing at 8.94x ROAS.</div>
+          <div style="font-size:12px;color:#6b7280"><strong>Expected:</strong> Recover &#8377;15,000+ weekly revenue currently being misdirected</div>
+        </div><div style="background:rgba(239,68,68,.1);border-left:4px solid #ef4444;border-radius:6px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">CRITICAL</span>
+            <span style="color:#e5e7eb;font-size:13px;font-weight:600">RI_TOF_ASC_DENIM_CO_ORDSET_JUNE_12_2026</span>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#f87171">Where:</strong> Meta &middot; Highgarden 2026</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#f87171">What:</strong> ROAS -57.3% (1.20x vs 2.81x baseline) — spending &#8377;8,839 at near breakeven</div>
+          <div style="font-size:12px;color:#fbbf24;margin-bottom:4px"><strong>&#8594; Action:</strong> Pause immediately. Denim co-ord creatives showing fatigue. Test new creative angles or pause to protect budget.</div>
+          <div style="font-size:12px;color:#6b7280"><strong>Expected:</strong> Recover &#8377;8,839 weekly spend; Highgarden account ROAS will recover towards 4x</div>
+        </div><div style="background:rgba(239,68,68,.1);border-left:4px solid #ef4444;border-radius:6px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">CRITICAL</span>
+            <span style="color:#e5e7eb;font-size:13px;font-weight:600">PC_VIDEO_1531MG_14 June_26</span>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#f87171">Where:</strong> Meta &middot; 9Shine 2023 CL</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#f87171">What:</strong> ROAS -40.7% (2.96x vs 4.99x baseline) with high CPM &#8377;733</div>
+          <div style="font-size:12px;color:#fbbf24;margin-bottom:4px"><strong>&#8594; Action:</strong> Reduce budget by 50% and A/B test new video hooks. CPM at &#8377;733 signals audience saturation.</div>
+          <div style="font-size:12px;color:#6b7280"><strong>Expected:</strong> CPM normalisation expected within 3-5 days; ROAS recovery to 4x+</div>
+        </div><div style="background:rgba(239,68,68,.1);border-left:4px solid #ef4444;border-radius:6px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">CRITICAL</span>
+            <span style="color:#e5e7eb;font-size:13px;font-weight:600">RI_TOF_P.MAX_Catelogue_Comp. All Mixed</span>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#f87171">Where:</strong> Google &middot; 9shines label</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#f87171">What:</strong> ROAS -60.6% (2.18x vs 5.53x baseline) — impression share only 23%</div>
+          <div style="font-size:12px;color:#fbbf24;margin-bottom:4px"><strong>&#8594; Action:</strong> Check Google Ads asset groups for quality issues. Review search terms report for irrelevant spend. Consider temporarily reducing bid target.</div>
+          <div style="font-size:12px;color:#6b7280"><strong>Expected:</strong> ROAS recovery to 4x+ once asset quality improved</div>
+        </div><div style="background:rgba(239,68,68,.1);border-left:4px solid #ef4444;border-radius:6px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">CRITICAL</span>
+            <span style="color:#e5e7eb;font-size:13px;font-weight:600">RI_MOF_Brand Search</span>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#f87171">Where:</strong> Google &middot; 9shines label</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#f87171">What:</strong> ROAS -52.5% (6.64x vs 13.97x baseline) — brand keyword campaign</div>
+          <div style="font-size:12px;color:#fbbf24;margin-bottom:4px"><strong>&#8594; Action:</strong> Check for competitor brand bidding. Review bid strategy — 13.97x baseline may include seasonal spike. Monitor impression share (currently 84.6%).</div>
+          <div style="font-size:12px;color:#6b7280"><strong>Expected:</strong> Identify if brand traffic composition changed; recovery expected if no competitor interference</div>
+        </div><div style="background:rgba(239,68,68,.1);border-left:4px solid #ef4444;border-radius:6px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">CRITICAL</span>
+            <span style="color:#e5e7eb;font-size:13px;font-weight:600">Utube Sleeveless</span>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#f87171">Where:</strong> Google &middot; 9shines label</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#f87171">What:</strong> ROAS -53.6% (1.86x vs 4.01x baseline) — Demand Gen sleeveless video</div>
+          <div style="font-size:12px;color:#fbbf24;margin-bottom:4px"><strong>&#8594; Action:</strong> Pause or significantly reduce budget. Only 2 conversions on &#8377;3,066 spend in 7d. Refresh video creative or pause until new assets available.</div>
+          <div style="font-size:12px;color:#6b7280"><strong>Expected:</strong> Reallocate &#8377;3,000/week to Long_Tshirts_utube which is performing at 7.23x ROAS</div>
+        </div><div style="background:rgba(245,158,11,.08);border-left:4px solid #f59e0b;border-radius:6px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#f59e0b;color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">WARNING</span>
+            <span style="color:#e5e7eb;font-size:13px;font-weight:600">RI_TOF_ASC_Alpine & sleeveless nighty</span>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#fbbf24">Where:</strong> Meta &middot; 9Shine 2023 CL</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#fbbf24">What:</strong> ROAS -28.9% (4.46x vs 6.27x baseline) — highest 9Shine 7d spend at &#8377;7,704</div>
+          <div style="font-size:12px;color:#fbbf24;margin-bottom:4px"><strong>&#8594; Action:</strong> Reduce budget by 30% and refresh creatives. Alpine/sleeveless category showing weakness across channels.</div>
+          <div style="font-size:12px;color:#6b7280"><strong>Expected:</strong> ROAS stabilisation at 5x+ with fresh creatives</div>
+        </div><div style="background:rgba(245,158,11,.08);border-left:4px solid #f59e0b;border-radius:6px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#f59e0b;color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">WARNING</span>
+            <span style="color:#e5e7eb;font-size:13px;font-weight:600">Highgarden 2026 Account</span>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#fbbf24">Where:</strong> Meta &middot; Highgarden 2026</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#fbbf24">What:</strong> Account ROAS -27.1% (3.06x vs 4.20x baseline) driven by Denim campaign drag</div>
+          <div style="font-size:12px;color:#fbbf24;margin-bottom:4px"><strong>&#8594; Action:</strong> Immediate pause of Denim campaign (already in CRITICAL). Shift budget to All_CAT campaign (5.51x ROAS).</div>
+          <div style="font-size:12px;color:#6b7280"><strong>Expected:</strong> Account ROAS recovery to 3.8x+ within 48h</div>
+        </div><div style="background:rgba(245,158,11,.08);border-left:4px solid #f59e0b;border-radius:6px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#f59e0b;color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">WARNING</span>
+            <span style="color:#e5e7eb;font-size:13px;font-weight:600">BABY_DOLL_VIDEO_(19th_June_26)</span>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#fbbf24">Where:</strong> Meta &middot; Highgarden 2026</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#fbbf24">What:</strong> ROAS -24.3% (4.33x vs 5.72x baseline)</div>
+          <div style="font-size:12px;color:#fbbf24;margin-bottom:4px"><strong>&#8594; Action:</strong> Refresh baby doll video creative. Current asset showing engagement decline. Test carousel format instead.</div>
+          <div style="font-size:12px;color:#6b7280"><strong>Expected:</strong> ROAS recovery to 5x+ with fresh video angle</div>
+        </div><div style="background:rgba(245,158,11,.08);border-left:4px solid #f59e0b;border-radius:6px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#f59e0b;color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">WARNING</span>
+            <span style="color:#e5e7eb;font-size:13px;font-weight:600">RI_TOF_P.MAX_Catelogue_All mixed</span>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#fbbf24">Where:</strong> Google &middot; 9shines label</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#fbbf24">What:</strong> ROAS -35.7% (3.96x vs 6.16x baseline) — second worst Google performer</div>
+          <div style="font-size:12px;color:#fbbf24;margin-bottom:4px"><strong>&#8594; Action:</strong> Review asset group performance and exclude low-quality audiences. Consider increasing ROAS target bid.</div>
+          <div style="font-size:12px;color:#6b7280"><strong>Expected:</strong> ROAS recovery to 5x+ with tighter audience targeting</div>
+        </div><div style="background:rgba(245,158,11,.08);border-left:4px solid #f59e0b;border-radius:6px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#f59e0b;color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">WARNING</span>
+            <span style="color:#e5e7eb;font-size:13px;font-weight:600">Short Nighty & T Shirt (Google)</span>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#fbbf24">Where:</strong> Google &middot; 9shines label</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#fbbf24">What:</strong> ROAS -28.6% (3.20x vs 4.48x baseline) — Demand Gen underperforming</div>
+          <div style="font-size:12px;color:#fbbf24;margin-bottom:4px"><strong>&#8594; Action:</strong> Swap video creative. Current click-through to landing page may have conversion issues — check page speed.</div>
+          <div style="font-size:12px;color:#6b7280"><strong>Expected:</strong> ROAS recovery to 4x+ within 7 days</div>
+        </div><div style="background:rgba(245,158,11,.08);border-left:4px solid #f59e0b;border-radius:6px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="background:#f59e0b;color:#000;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">WARNING</span>
+            <span style="color:#e5e7eb;font-size:13px;font-weight:600">Pmax- Denim_Baby Doll (Google)</span>
+          </div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#fbbf24">Where:</strong> Google &middot; Highgarden</div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:4px"><strong style="color:#fbbf24">What:</strong> ROAS -38.0% (1.83x vs 2.95x baseline) — CPA &#8377;1,243 vs baseline &#8377;551</div>
+          <div style="font-size:12px;color:#fbbf24;margin-bottom:4px"><strong>&#8594; Action:</strong> Pause and review denim category demand. Cross-channel signal: both Meta and Google denim/sleeveless performing poorly.</div>
+          <div style="font-size:12px;color:#6b7280"><strong>Expected:</strong> Save &#8377;3,693 weekly if paused; reallocate to Short Nighty Pmax at 3.75x</div>
+        </div>
 </div>
 
 <script>
-function showTab(name){
+function showTab(name, el) {
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
-  event.target.classList.add('active');
+  el.classList.add('active');
 }
 
-const CHART_DEFAULTS = {
-  plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}},
-  scales:{x:{ticks:{color:'#64748b',font:{size:10}},grid:{color:'#1e2330'}},y:{ticks:{color:'#64748b',font:{size:10}},grid:{color:'#1e2330'}}}
+const chartDefaults = {
+  plugins: {legend:{labels:{color:'#9ca3af',font:{size:11}}}},
+  scales: {
+    x:{ticks:{color:'#6b7280',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'}},
+    y:{ticks:{color:'#6b7280',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'}}
+  }
 };
 
-// Meta Spend
-new Chart(document.getElementById('metaSpendChart'),{type:'bar',data:{
-  labels:['9 Shine 2023 CL','Highgarden 2026','9shines Intl'],
-  datasets:[{label:'7d Spend (₹)',data:[120236,28806,19511],backgroundColor:['#6d28d9','#7c3aed','#8b5cf6'],borderRadius:4}]
-},options:{...CHART_DEFAULTS,plugins:{...CHART_DEFAULTS.plugins,title:{display:false}}}});
-
-// Meta ROAS
-new Chart(document.getElementById('metaRoasChart'),{type:'bar',data:{
-  labels:['9 Shine 2023 CL','Highgarden 2026','9shines Intl'],
-  datasets:[
-    {label:'7d ROAS',data:[4.886,3.830,0.532],backgroundColor:['#059669','#d97706','#dc2626'],borderRadius:4},
-    {label:'30d ROAS',data:[4.924,4.344,0.358],backgroundColor:['#34d399','#fbbf24','#f87171'],borderRadius:4}
-  ]
-},options:{...CHART_DEFAULTS}});
-
-// Google ROAS chart
-const gCamps=['P.MAX\nCatalogue\nComp','P.MAX\nCatalogue\nMixed','MOF\nBrand\nSearch','P.MAX\nCatalogue\nPluss','MOF\nP.MAX\n19/06','Long\nTshirts','Utube\nSleeveless','Short\nNighty'];
-new Chart(document.getElementById('googleRoasChart'),{type:'bar',data:{
-  labels:gCamps,
-  datasets:[
-    {label:'7d ROAS',data:[2.97,3.05,6.34,3.71,8.60,6.73,2.62,2.24],backgroundColor:'#6d28d9',borderRadius:3},
-    {label:'30d ROAS',data:[5.58,6.20,14.40,4.25,6.22,5.42,5.61,4.54],backgroundColor:'#374151',borderRadius:3}
-  ]
-},options:{...CHART_DEFAULTS}});
-
-// Google Spend
-new Chart(document.getElementById('googleSpendChart'),{type:'bar',data:{
-  labels:gCamps,
-  datasets:[{label:'7d Spend (₹)',data:[5319,5205,4130,3768,5377,3153,2870,2747],backgroundColor:'#7c3aed',borderRadius:3}]
-},options:{...CHART_DEFAULTS}});
-
-// Yesterday spend
-new Chart(document.getElementById('ydSpendChart'),{type:'doughnut',data:{
-  labels:['9 Shine 2023 CL','Highgarden 2026','9shines Intl','Google 9shines'],
-  datasets:[{data:[20174,4662,3279,4916],backgroundColor:['#6d28d9','#7c3aed','#dc2626','#0891b2'],borderWidth:0}]
-},options:{plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}}});
-
-// Yesterday ROAS
-new Chart(document.getElementById('ydRoasChart'),{type:'bar',data:{
-  labels:['9 Shine 2023 CL','Highgarden 2026','9shines Intl','Google 9shines'],
-  datasets:[{label:'Yesterday ROAS',data:[3.619,3.404,0,3.23],backgroundColor:['#059669','#d97706','#dc2626','#0891b2'],borderRadius:4}]
-},options:{...CHART_DEFAULTS}});
-
-// Customer split
-new Chart(document.getElementById('custSplitChart'),{type:'doughnut',data:{
-  labels:['New Customers (16)','Existing (11)'],
-  datasets:[{data:[16,11],backgroundColor:['#059669','#3b82f6'],borderWidth:0}]
-},options:{plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}}});
-
-// Campaign tables
-const metaCamps=[
-  {rag:'NEW',name:'New_Cst_Sales_Camp_05_06_2026',spend:335.41,roas:0.0,dev:-100.0,purch:0,cpm:552.57,ctr:8.90},
-  {rag:'AMBER',name:'Cst_Store_Video_Sales_02_July_26',spend:2043.18,roas:2.705,dev:-45.1,purch:3,cpm:231.65,ctr:6.21},
-  {rag:'GREEN',name:'Cst_Store_Video_Sales_26_June_2026',spend:5067.15,roas:10.479,dev:+112.8,purch:23,cpm:197.94,ctr:6.20},
-  {rag:'AMBER',name:'PC_VIDEO_1531MG_14_June_26',spend:4946.66,roas:3.110,dev:-36.9,purch:7,cpm:661.94,ctr:3.45},
-  {rag:'GREEN',name:'Tripti_Dimri_Creative_Campaign_9th_June_2026',spend:3908.46,roas:9.462,dev:+92.2,purch:9,cpm:478.68,ctr:4.31},
-  {rag:'RED',name:'RI_TOF_ASC_SAHELI_MAY_28',spend:5556.24,roas:1.784,dev:-63.8,purch:4,cpm:482.65,ctr:2.68},
-  {rag:'AMBER',name:'RI_TOF_ASC_NEW_CUSTOMER_SHORT_NIGHTY_MAY_22',spend:5609.20,roas:4.021,dev:-18.3,purch:10,cpm:367.29,ctr:2.55},
-  {rag:'GREEN',name:'ASC_MIX_CREATIVES_MAY_15',spend:5533.06,roas:6.574,dev:+33.5,purch:13,cpm:351.64,ctr:7.14},
-  {rag:'GREEN',name:'RI_TOF_LOOKALIKE+ASC_MAY_12',spend:5537.48,roas:6.935,dev:+40.8,purch:9,cpm:383.11,ctr:3.12},
-  {rag:'GREEN',name:'RI_TOF_ASC_Alpine_sleeveless_nighty_Videos_april_13',spend:7652.94,roas:4.528,dev:-8.1,purch:14,cpm:274.85,ctr:3.93},
-];
-const mt=document.getElementById('metaCampTbody');
-metaCamps.forEach(c=>{
-  const devStr=c.dev>=0?`+${c.dev}%`:`${c.dev}%`;
-  const devColor=c.dev>0?'color:#86efac':c.dev<-40?'color:#fca5a5':c.dev<-20?'color:#fcd34d':'color:#e2e8f0';
-  mt.innerHTML+=`<tr><td><span class="badge ${c.rag}">${c.rag}</span></td><td>${c.name}</td><td>₹${c.spend.toLocaleString()}</td><td>${c.roas}x</td><td style="${devColor}">${devStr}</td><td>${c.purch}</td><td>₹${c.cpm}</td><td>${c.ctr}%</td></tr>`;
+// Meta ROAS chart
+new Chart(document.getElementById('metaRoasChart'), {
+  type:'bar',
+  data:{
+    labels:["9\\u00a0Shine\\u00a02023\\u00a0CL", "Highgarden\\u00a02026", "9shines\\u00a0international"],
+    datasets:[
+      {label:'7d Actual',data:[5.19, 3.06, 1.92],backgroundColor:'rgba(99,102,241,.8)',borderRadius:4},
+      {label:'30d Baseline',data:[5.12, 4.2, 0.807],backgroundColor:'rgba(99,102,241,.2)',borderWidth:1,borderColor:'#6366f1',borderRadius:4}
+    ]
+  },
+  options:{...chartDefaults,plugins:{...chartDefaults.plugins,title:{display:false}}}
 });
 
-const gCampsData=[
-  {rag:'RED',name:'RI_TOF_P.MAX_Catelogue_Comp_All_Mixed',spend:5319.17,roas:2.97,base:5.58,dev:-46.8,convs:4.6,cpa:1155.76,ctr:1.96},
-  {rag:'RED',name:'RI_TOF_P.MAX_Catelogue_All_mixed_No_adcopies',spend:5204.86,roas:3.05,base:6.20,dev:-50.8,convs:9.8,cpa:530.90,ctr:2.57},
-  {rag:'RED',name:'RI_MOF_Brand_Search',spend:4130.19,roas:6.34,base:14.40,dev:-56.0,convs:11.0,cpa:375.47,ctr:52.83},
-  {rag:'AMBER',name:'RI_TOF_Pmax_Catelogue_Pluss',spend:3767.73,roas:3.71,base:4.25,dev:-12.7,convs:9.0,cpa:418.64,ctr:1.89},
-  {rag:'GREEN',name:'RI_MOF_P.MAX_19/06/2024',spend:5376.50,roas:8.60,base:6.22,dev:+38.3,convs:14.1,cpa:380.91,ctr:2.60},
-  {rag:'GREEN',name:'Long_Tshirts_utube_2026-04-03',spend:3152.94,roas:6.73,base:5.42,dev:+24.2,convs:14.8,cpa:212.56,ctr:1.98},
-  {rag:'RED',name:'Utube_Sleeveless_2026-05-12',spend:2869.62,roas:2.62,base:5.61,dev:-53.3,convs:3.0,cpa:950.67,ctr:2.29},
-  {rag:'RED',name:'Short_Nighty_T_Shirt_14Apr2026',spend:2747.36,roas:2.24,base:4.54,dev:-50.7,convs:3.6,cpa:757.85,ctr:2.02},
-];
-const gt=document.getElementById('googleCampTbody');
-gCampsData.forEach(c=>{
-  const devStr=c.dev>=0?`+${c.dev}%`:`${c.dev}%`;
-  const devColor=c.dev>0?'color:#86efac':c.dev<-40?'color:#fca5a5':c.dev<-20?'color:#fcd34d':'color:#e2e8f0';
-  gt.innerHTML+=`<tr><td><span class="badge ${c.rag}">${c.rag}</span></td><td>${c.name}</td><td>₹${c.spend.toLocaleString()}</td><td>${c.roas}x</td><td>${c.base}x</td><td style="${devColor}">${devStr}</td><td>${c.convs}</td><td>₹${c.cpa}</td><td>${c.ctr}%</td></tr>`;
+// Meta CPM chart
+new Chart(document.getElementById('metaCpmChart'), {
+  type:'bar',
+  data:{
+    labels:["9\\u00a0Shine\\u00a02023\\u00a0CL", "Highgarden\\u00a02026", "9shines\\u00a0international"],
+    datasets:[
+      {label:'7d CPM',data:[182, 485, 1531],backgroundColor:'rgba(239,68,68,.7)',borderRadius:4},
+      {label:'30d Baseline CPM',data:[158, 418, 1018],backgroundColor:'rgba(239,68,68,.2)',borderWidth:1,borderColor:'#ef4444',borderRadius:4}
+    ]
+  },
+  options:{...chartDefaults}
+});
+
+// Google ROAS chart
+new Chart(document.getElementById('googRoasChart'), {
+  type:'bar',
+  data:{
+    labels:["RI_TOF_P.MAX_Catelogue_Comp....", "Utube Sleeveless", "RI_MOF_Brand Search", "Pmax- Denim_Baby Doll", "RI_TOF_P.MAX_Catelogue_All m...", "Short Nighty & T Shirt", "RI_TOF_Pmax_Catelogue_Pluss", "Pmax (Short Nighty & Tshirts...", "PMAX (Pajama Sets)", "Long_Tshirts_utube", "RI_MOF_P.MAX"],
+    datasets:[
+      {label:'7d ROAS',data:[2.18, 1.86, 6.64, 1.83, 3.96, 3.2, 3.0, 3.75, 2.14, 7.23, 8.16],backgroundColor:'rgba(34,197,94,.7)',borderRadius:4},
+      {label:'30d Baseline',data:[5.53, 4.01, 13.97, 2.95, 6.16, 4.48, 3.67, 3.96, 1.86, 5.42, 5.95],backgroundColor:'rgba(34,197,94,.2)',borderWidth:1,borderColor:'#22c55e',borderRadius:4}
+    ]
+  },
+  options:{...chartDefaults,indexAxis:'y'}
+});
+
+// Google CPA chart
+new Chart(document.getElementById('googCpaChart'), {
+  type:'bar',
+  data:{
+    labels:["RI_TOF_P.MAX_Catelogue_Comp....", "Utube Sleeveless", "RI_MOF_Brand Search", "Pmax- Denim_Baby Doll", "RI_TOF_P.MAX_Catelogue_All m...", "Short Nighty & T Shirt", "RI_TOF_Pmax_Catelogue_Pluss", "Pmax (Short Nighty & Tshirts...", "PMAX (Pajama Sets)", "Long_Tshirts_utube", "RI_MOF_P.MAX"],
+    datasets:[
+      {label:'7d CPA',data:[1002, 1530, 270, 1243, 571, 802, 527, 273, 945, 222, 407],backgroundColor:'rgba(245,158,11,.7)',borderRadius:4},
+      {label:'30d Baseline CPA',data:[486, 462, 238, 551, 383, 367, 455, 316, 1108, 292, 427],backgroundColor:'rgba(245,158,11,.2)',borderWidth:1,borderColor:'#f59e0b',borderRadius:4}
+    ]
+  },
+  options:{...chartDefaults,indexAxis:'y'}
 });
 </script>
 </body>
