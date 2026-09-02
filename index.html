@@ -1,707 +1,407 @@
-<!DOCTYPE html>
-<html><head><meta charset="UTF-8">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>9shines label &mdash; Ad Anomaly Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
 <style>
-:root{--bg:#0b0e14;--panel:#141824;--panel2:#1a2030;--border:#2a3142;--text:#e6e9f0;--muted:#8b93a7;--red:#ff5470;--amber:#ffb84d;--green:#4ade80;--blue:#5b8def;}
-*{box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:0;}
-.header{padding:16px 24px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:10;}
-.header h1{font-size:18px;margin:0;flex:1;}
-.chip{background:var(--panel2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;}
-.chip.crit{color:var(--red);}.chip.warn{color:var(--amber);}.chip.info{color:var(--blue);}.chip.dep{color:var(--muted);}
-.updated{font-size:12px;color:var(--muted);}
-.tabs{display:flex;gap:4px;padding:0 24px;background:var(--panel);border-bottom:1px solid var(--border);overflow-x:auto;}
-.tab-btn{background:none;border:none;color:var(--muted);padding:12px 18px;cursor:pointer;font-size:14px;border-bottom:2px solid transparent;white-space:nowrap;}
-.tab-btn.active{color:var(--text);border-bottom-color:var(--blue);}
-.tab-content{display:none;padding:20px 24px;max-width:1400px;margin:0 auto;}
-.tab-content.active{display:block;}
-.section-title{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:24px 0 12px;}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;}
-.card-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
-.card-top h3{font-size:14px;margin:0;}
-.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;}
-.rag-red{background:rgba(255,84,112,.18);color:var(--red);}
-.rag-amber{background:rgba(255,184,77,.18);color:var(--amber);}
-.rag-green{background:rgba(74,222,128,.18);color:var(--green);}
-.pill{background:var(--panel2);border-radius:10px;padding:3px 8px;font-size:10px;color:var(--muted);}
-.pill.new{background:rgba(91,141,239,.18);color:var(--blue);}
-.camp-name{font-size:12px;font-weight:600;margin-bottom:8px;line-height:1.3;min-height:32px;}
-.metric-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;color:var(--muted);}
-.metric-row b{color:var(--text);}
-.dev{font-size:11px;}
-.dev.neg{color:var(--red);}
-.dev.pos{color:var(--green);}
-.chart-wrap{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;}
-.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-@media(max-width:900px){.charts-row{grid-template-columns:1fr;}}
-.dep-card{border-left:3px solid var(--muted);}
-.dep-card.sev-critical{border-left-color:var(--red);}
-.dep-card.sev-warning{border-left-color:var(--amber);}
-.dep-card.sev-info{border-left-color:var(--blue);}
-.dep-entity{font-size:12px;color:var(--muted);margin:4px 0;}
-.dep-detail{font-size:13px;}
-.sev-badge-critical{background:rgba(255,84,112,.18);color:var(--red);}
-.sev-badge-warning{background:rgba(255,184,77,.18);color:var(--amber);}
-.sev-badge-info{background:rgba(91,141,239,.18);color:var(--blue);}
-.alert-row{display:grid;grid-template-columns:80px 260px 140px 1fr;gap:12px;align-items:center;padding:10px;border-bottom:1px solid var(--border);font-size:12px;}
-.alert-entity{color:var(--text);}
-.alert-type{color:var(--muted);}
-.alert-detail{color:var(--muted);}
-.banner{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px;}
-.banner-title{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:14px;}
-.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;}
-.metric-chip{background:var(--panel2);border-radius:10px;padding:12px;}
-.metric-chip .lbl{font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:.5px;}
-.metric-chip .val{font-size:20px;font-weight:700;margin-top:4px;}
-.metric-chip .sub{font-size:10px;color:var(--muted);margin-top:2px;}
-.chip-green .val{color:var(--green);}
-.chip-red .val{color:var(--red);}
-table{width:100%;border-collapse:collapse;font-size:13px;}
-th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;padding:8px;border-bottom:1px solid var(--border);}
-td{padding:8px;border-bottom:1px solid var(--border);}
-.roas-bad{color:var(--red);}
-.warn-tri{color:var(--amber);}
-.action-item{display:flex;gap:12px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;border-left:3px solid var(--muted);}
-.action-item.sev-critical{border-left-color:var(--red);}
-.action-item.sev-warning{border-left-color:var(--amber);}
-.action-item.sev-info{border-left-color:var(--blue);}
-.action-body div{font-size:13px;margin:3px 0;color:var(--muted);}
-.action-body b{color:var(--text);}
-.empty{color:var(--muted);padding:20px;text-align:center;}
-</style></head>
-<body>
-<div class="header">
-  <h1>9shines label &mdash; Ad Anomaly Dashboard &#183; 2026-08-26</h1>
-  <span class="chip crit">Critical 8</span>
-  <span class="chip warn">Warning 8</span>
-  <span class="chip info">Info 1</span>
-  <span class="chip dep">Dependencies 2</span>
-  <span class="updated">Last updated: 2026-08-26 21:12 IST</span>
-</div>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b0e14;color:#e6e9ef;font:14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:20px}
+.hdr{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:18px;border-bottom:1px solid #1e2430;padding-bottom:14px}
+.hdr h1{font-size:19px;font-weight:650;margin-right:auto}
+.hdr h1 span{color:#7c8698;font-weight:400;font-size:13px;display:block;margin-top:2px}
+.sc{padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;border:1px solid}
+.sc.r{background:#2a1113;border-color:#5b1d22;color:#ff8f96}
+.sc.a{background:#2a2110;border-color:#5b451d;color:#ffc46b}
+.sc.i{background:#101f2a;border-color:#1d455b;color:#6bc6ff}
+.sc.d{background:#1a1226;border-color:#3d2a5b;color:#c39bff}
+.ts{color:#7c8698;font-size:12px}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:18px;border-bottom:1px solid #1e2430}
+.tb{padding:9px 16px;background:none;border:0;border-bottom:2px solid transparent;color:#7c8698;font:inherit;font-weight:600;cursor:pointer;font-size:13px}
+.tb:hover{color:#e6e9ef}
+.tb.on{color:#fff;border-bottom-color:#4d8dff}
+.tb .n{background:#1e2430;color:#a4adbd;border-radius:9px;padding:1px 7px;font-size:11px;margin-left:6px}
+.pane{display:none}.pane.on{display:block}
+h2.sh{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#7c8698;font-weight:650;margin:26px 0 12px}
+h3.ah{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#a4adbd;font-weight:650;margin:24px 0 10px}
+h3.ah .cnt{background:#1e2430;border-radius:9px;padding:1px 7px;font-size:11px;color:#7c8698}
+.row{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(285px,1fr))}
+.card{background:#111623;border:1px solid #1e2430;border-radius:10px;padding:14px}
+.chd{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cnm{font-weight:650;font-size:14px}
+.cnm2{font-weight:600;font-size:12.5px;color:#c8cedb;margin-bottom:8px;word-break:break-word;line-height:1.35}
+.pill{background:#1a2130;color:#8b95a7;border-radius:5px;padding:2px 7px;font-size:10.5px;font-weight:600}
+.bdg{margin-left:auto;border-radius:5px;padding:2px 8px;font-size:10.5px;font-weight:700;letter-spacing:.03em}
+.bdg.red{background:#3a1418;color:#ff8f96}.bdg.amb{background:#3a2c14;color:#ffc46b}
+.bdg.grn{background:#12301f;color:#5fd39a}.bdg.new{background:#152738;color:#6bc6ff}
+.bdg.inf{background:#101f2a;color:#6bc6ff}
+.big{font-size:27px;font-weight:680;letter-spacing:-.01em}
+.big2{font-size:21px;font-weight:680}
+.sub{color:#7c8698;font-size:11.5px;margin-top:2px}
+.dv{font-size:12px;font-weight:650}
+.dv.up{color:#5fd39a}.dv.dn{color:#ff8f96}.dv.n{color:#7c8698}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:9px 12px;margin-top:12px;padding-top:11px;border-top:1px solid #1e2430}
+.grid4 i{display:block;color:#7c8698;font-size:10.5px;font-style:normal;text-transform:uppercase;letter-spacing:.05em}
+.grid4 b{font-size:13px;font-weight:600}
+.chw{background:#111623;border:1px solid #1e2430;border-radius:10px;padding:16px;height:270px;position:relative}
+.banner{background:linear-gradient(180deg,#141b2b,#111623);border:1px solid #253046;border-radius:12px;padding:18px;margin-bottom:8px}
+.bl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#8b95a7;font-weight:650;margin-bottom:14px}
+.chips{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}
+.chip{background:#0e1420;border:1px solid #1e2430;border-radius:9px;padding:11px 13px}
+.chip i{display:block;color:#7c8698;font-size:10px;font-style:normal;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.chip b{font-size:19px;font-weight:680;display:block}
+.chip .cn{color:#7c8698;font-size:10.5px;display:block;margin-top:3px}
+.chip.ok b{color:#5fd39a}.chip.bad b{color:#ff8f96}
+table{width:100%;border-collapse:collapse;background:#111623;border:1px solid #1e2430;border-radius:10px;overflow:hidden}
+th{text-align:left;padding:10px 13px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#7c8698;font-weight:650;border-bottom:1px solid #1e2430;background:#0e1420}
+td{padding:11px 13px;border-bottom:1px solid #161c28;font-size:13px}
+tr:last-child td{border-bottom:0}
+.bad{color:#ff8f96;font-weight:650}
+.arow{display:flex;gap:11px;align-items:flex-start;padding:11px 13px;border-bottom:1px solid #161c28}
+.arow .bdg{margin-left:0;flex-shrink:0;margin-top:1px}
+.atx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.atx b{font-size:12.5px}
+.aty{color:#a4adbd;font-size:11.5px;font-weight:600}
+.adt{color:#7c8698;font-size:11.5px}
+.alist{background:#111623;border:1px solid #1e2430;border-radius:10px;max-height:520px;overflow-y:auto}
+.dep{border-color:#3a2c14}
+.dtl{color:#a4adbd;font-size:12px;margin-top:8px;padding-top:8px;border-top:1px solid #1e2430}
+.act .chd .cnm2{margin-bottom:0}
+.act .bdg{margin-left:0}
+.ai{display:grid;grid-template-columns:96px 1fr;gap:8px;padding:5px 0;font-size:12px}
+.ai i{color:#7c8698;font-style:normal;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
+.ai span{color:#c8cedb}
+.note{color:#7c8698;font-size:11.5px;margin-top:10px;padding:10px 13px;background:#0e1420;border:1px solid #1e2430;border-left:2px solid #3d4a63;border-radius:7px}
+</style></head><body>
+<div class="hdr"><h1>9shines label &mdash; Ad Anomaly Dashboard<span>Meta (3 accounts) + Google Ads (2 accounts) + Shopify &#183; 7d vs 30d baseline</span></h1>
+<span class="sc r">Critical 19</span><span class="sc a">Warning 8</span>
+<span class="sc i">Info 5</span><span class="sc d">Dependencies 1</span>
+<span class="ts">Last updated 2026-09-02 09:00 IST</span></div>
 <div class="tabs">
-  <button class="tab-btn active" onclick="showTab(0)">Meta Ads</button>
-  <button class="tab-btn" onclick="showTab(1)">Google Ads</button>
-  <button class="tab-btn" onclick="showTab(2)">Discrepancies &amp; Dependencies</button>
-  <button class="tab-btn" onclick="showTab(3)">Yesterday Performance</button>
-  <button class="tab-btn" onclick="showTab(4)">Action Items</button>
-</div>
+<button class="tb on" data-t="meta">Meta Ads <span class="n">23</span></button>
+<button class="tb" data-t="goog">Google Ads <span class="n">12</span></button>
+<button class="tb" data-t="disc">Discrepancies <span class="n">1</span></button>
+<button class="tb" data-t="yest">Yesterday</button>
+<button class="tb" data-t="acts">Action Items <span class="n">32</span></button></div>
 
-<div class="tab-content active" id="tab0">
-  <div class="section-title">Accounts</div>
-  <div class="grid">
-    <div class="card acct-card">
-      <div class="card-top"><span class="badge rag-green">GREEN</span><h3>9 Shine 2023 CL</h3></div>
-      <div class="metric-row"><span>ROAS</span><b>4.12x</b><span class="dev pos">&uarr; 0.9%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;122,395</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;193</b><span class="dev pos">&darr; 3.4%</span></div>
-      <div class="metric-row"><span>Purchases</span><b>231</b><span class="dev neg">&darr; 7.0%</span></div>
-      <div class="metric-row"><span>CTR</span><b>7.10%</b><span class="dev pos">&uarr; 0.5%</span></div>
-    </div>
-    <div class="card acct-card">
-      <div class="card-top"><span class="badge rag-amber">AMBER</span><h3>Highgarden 2026</h3></div>
-      <div class="metric-row"><span>ROAS</span><b>1.94x</b><span class="dev neg">&darr; 38.1%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;24,709</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;519</b><span class="dev neg">&uarr; 31.8%</span></div>
-      <div class="metric-row"><span>Purchases</span><b>24</b><span class="dev neg">&darr; 38.4%</span></div>
-      <div class="metric-row"><span>CTR</span><b>5.36%</b><span class="dev neg">&darr; 2.0%</span></div>
-    </div>
-    <div class="card acct-card">
-      <div class="card-top"><span class="badge rag-green">GREEN</span><h3>9shines international</h3></div>
-      <div class="metric-row"><span>ROAS</span><b>2.85x</b><span class="dev pos">&uarr; 139.4%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;19,222</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;1,553</b><span class="dev neg">&uarr; 6.3%</span></div>
-      <div class="metric-row"><span>Purchases</span><b>6</b><span class="dev pos">&uarr; 157.1%</span></div>
-      <div class="metric-row"><span>CTR</span><b>3.26%</b><span class="dev neg">&darr; 1.8%</span></div>
-    </div></div>
-  <div class="charts-row">
-    <div class="chart-wrap"><canvas id="metaRoasChart" height="200"></canvas></div>
-    <div class="chart-wrap"><canvas id="metaCpmChart" height="200"></canvas></div>
-  </div>
-  <div class="section-title">Campaigns (20)</div>
-  <div class="grid">
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">Highgarden 2026</span><span class="badge rag-red">RED</span></div>
-      <div class="camp-name">KOREAN_PJ_SETS_20_JULY_2026</div>
-      <div class="metric-row"><span>ROAS</span><b>0.94x</b><span class="dev neg">&darr; 72.3%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;5,093</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;683</b><span class="dev pos">&darr; 1.4%</span></div>
-      <div class="metric-row"><span>CTR</span><b>3.90%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">Highgarden 2026</span><span class="badge rag-red">RED</span></div>
-      <div class="camp-name">Chmeise_Dress_Campaign_15th_Aug_26</div>
-      <div class="metric-row"><span>ROAS</span><b>1.38x</b><span class="dev neg">&darr; 70.1%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;920</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;538</b><span class="dev neg">&uarr; 13.6%</span></div>
-      <div class="metric-row"><span>CTR</span><b>4.74%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-amber">AMBER</span></div>
-      <div class="camp-name">New_Customer_Only_Camp_05_July_2026</div>
-      <div class="metric-row"><span>ROAS</span><b>1.80x</b><span class="dev neg">&darr; 39.9%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;9,598</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;683</b><span class="dev neg">&uarr; 21.0%</span></div>
-      <div class="metric-row"><span>CTR</span><b>6.21%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-amber">AMBER</span></div>
-      <div class="camp-name">Regal_Collection_Sales_Campaign_8th July</div>
-      <div class="metric-row"><span>ROAS</span><b>3.21x</b><span class="dev neg">&darr; 33.5%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;6,298</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;565</b><span class="dev neg">&uarr; 9.2%</span></div>
-      <div class="metric-row"><span>CTR</span><b>4.40%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">Highgarden 2026</span><span class="badge rag-amber">AMBER</span></div>
-      <div class="camp-name">BABY_DOLL_VIDEO_(19th_June_26)</div>
-      <div class="metric-row"><span>ROAS</span><b>2.18x</b><span class="dev neg">&darr; 29.6%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;3,492</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;362</b><span class="dev neg">&uarr; 4.8%</span></div>
-      <div class="metric-row"><span>CTR</span><b>7.01%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">Highgarden 2026</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">All_CAT_Sales_Campaign_(19/06/2026)</div>
-      <div class="metric-row"><span>ROAS</span><b>4.47x</b><span class="dev neg">&darr; 12.2%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;6,021</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;486</b><span class="dev pos">&darr; 0.7%</span></div>
-      <div class="metric-row"><span>CTR</span><b>7.72%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">Highgarden 2026</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">RI_TOF_ASC_DENIM_CO_ORDSET_JUNE_12_2026</div>
-      <div class="metric-row"><span>ROAS</span><b>1.18x</b><span class="dev neg">&darr; 3.6%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;5,367</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;516</b><span class="dev pos">&darr; 3.4%</span></div>
-      <div class="metric-row"><span>CTR</span><b>3.58%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">Highgarden 2026</span><span class="badge rag-red">RED</span></div>
-      <div class="camp-name">Pj_Sets_Camp_20_Aug_26</div>
-      <div class="metric-row"><span>ROAS</span><b>0.25x</b><span class="dev pos">&uarr; 0.0%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;3,817</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;635</b><span class="dev pos">&uarr; 0.0%</span></div>
-      <div class="metric-row"><span>CTR</span><b>2.91%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">SIGNATURE_CTATALOGUE_CAMPAIGN_28TH_JULY_26</div>
-      <div class="metric-row"><span>ROAS</span><b>6.76x</b><span class="dev pos">&uarr; 13.4%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;5,839</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;748</b><span class="dev neg">&uarr; 27.3%</span></div>
-      <div class="metric-row"><span>CTR</span><b>5.56%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">RI_TOF_ASC_SAHELI_MAY_28</div>
-      <div class="metric-row"><span>ROAS</span><b>4.28x</b><span class="dev pos">&uarr; 16.0%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;4,964</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;773</b><span class="dev neg">&uarr; 25.1%</span></div>
-      <div class="metric-row"><span>CTR</span><b>3.72%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">ALPINE_COLLECTION_CAMPAIGN_27_JULY_26</div>
-      <div class="metric-row"><span>ROAS</span><b>7.91x</b><span class="dev pos">&uarr; 32.5%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;6,553</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;729</b><span class="dev neg">&uarr; 34.5%</span></div>
-      <div class="metric-row"><span>CTR</span><b>7.05%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">Cst_Store_ Video_Sales_27_June_2026</div>
-      <div class="metric-row"><span>ROAS</span><b>6.11x</b><span class="dev pos">&uarr; 35.1%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;7,873</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;219</b><span class="dev pos">&darr; 3.0%</span></div>
-      <div class="metric-row"><span>CTR</span><b>7.66%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">6_Months_Customer_List_8th_July_26</div>
-      <div class="metric-row"><span>ROAS</span><b>4.87x</b><span class="dev pos">&uarr; 37.2%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;5,736</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;496</b><span class="dev neg">&uarr; 15.9%</span></div>
-      <div class="metric-row"><span>CTR</span><b>7.23%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9shines international</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">RI_TOF_NIGHTY_UAE_JUNE_25_2026</div>
-      <div class="metric-row"><span>ROAS</span><b>2.85x</b><span class="dev pos">&uarr; 139.4%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;19,222</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;1,553</b><span class="dev neg">&uarr; 6.3%</span></div>
-      <div class="metric-row"><span>CTR</span><b>3.26%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-green">GREEN</span><span class="pill new">NEW</span></div>
-      <div class="camp-name">A_Line_ Sales_22_Aug_2026</div>
-      <div class="metric-row"><span>ROAS</span><b>2.71x</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;3,153</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;854</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>CTR</span><b>2.92%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-green">GREEN</span><span class="pill new">NEW</span></div>
-      <div class="camp-name">Store_Map_4_Km_19_Aug_26_Campaign</div>
-      <div class="metric-row"><span>ROAS</span><b>3.38x</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;2,259</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;560</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>CTR</span><b>3.15%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-green">GREEN</span><span class="pill new">NEW</span></div>
-      <div class="camp-name">Brand_Video_Sales Campaign_19th_Aug_26</div>
-      <div class="metric-row"><span>ROAS</span><b>1.56x</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;3,710</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;412</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>CTR</span><b>4.14%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-green">GREEN</span><span class="pill new">NEW</span></div>
-      <div class="camp-name">Anniversary_jaya_Video_Traffic_13_AUG</div>
-      <div class="metric-row"><span>ROAS</span><b>&mdash;</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;1,665</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;18</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>CTR</span><b>5.61%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-green">GREEN</span><span class="pill new">NEW</span></div>
-      <div class="camp-name">RAYON_SALES_ CAMPAIGN_29_JULY_26</div>
-      <div class="metric-row"><span>ROAS</span><b>3.21x</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;5,317</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;527</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>CTR</span><b>3.80%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9 Shine 2023 CL</span><span class="badge rag-green">GREEN</span><span class="pill new">NEW</span></div>
-      <div class="camp-name">Frock_Style_Nighties_29_JULY</div>
-      <div class="metric-row"><span>ROAS</span><b>1.35x</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;1,334</b></div>
-      <div class="metric-row"><span>CPM</span><b>&#8377;540</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>CTR</span><b>3.28%</b></div>
-    </div></div>
-</div>
+<div class="pane on" id="meta">
+<h2 class="sh">Account health &mdash; 7 days vs 30-day baseline</h2><div class="row"><div class="card"><div class="chd"><span class="cnm">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="big">4.30x <span class="dv up">&uarr; 5%</span></div><div class="sub">ROAS (7d) vs 30d baseline 4.10x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;119,904</b></div><div><i>CPM</i><b>&#8377;197 <span class="dv n">&uarr; 1%</span></b></div>
+<div><i>Purchases</i><b>236 <span class="dv n">&darr; 2%</span></b></div><div><i>CTR</i><b>6.21% <span class="dv n">&darr; 10%</span></b></div></div></div><div class="card"><div class="chd"><span class="cnm">Highgarden 2026</span><span class="bdg amb">AMBER</span></div>
+<div class="big">1.55x <span class="dv dn">&darr; 38%</span></div><div class="sub">ROAS (7d) vs 30d baseline 2.49x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;26,375</b></div><div><i>CPM</i><b>&#8377;443 <span class="dv dn">&uarr; 11%</span></b></div>
+<div><i>Purchases</i><b>18 <span class="dv dn">&darr; 46%</span></b></div><div><i>CTR</i><b>4.92% <span class="dv n">&darr; 8%</span></b></div></div></div><div class="card"><div class="chd"><span class="cnm">9shines international</span><span class="bdg red">RED</span></div>
+<div class="big">0.56x <span class="dv dn">&darr; 50%</span></div><div class="sub">ROAS (7d) vs 30d baseline 1.12x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;19,979</b></div><div><i>CPM</i><b>&#8377;1,700 <span class="dv dn">&uarr; 12%</span></b></div>
+<div><i>Purchases</i><b>2 <span class="dv dn">&darr; 14%</span></b></div><div><i>CTR</i><b>2.89% <span class="dv dn">&darr; 11%</span></b></div></div></div></div>
+<h2 class="sh">Baseline comparison</h2>
+<div class="row" style="grid-template-columns:repeat(auto-fill,minmax(340px,1fr))">
+<div class="chw"><canvas id="c1"></canvas></div><div class="chw"><canvas id="c2"></canvas></div></div>
+<h2 class="sh">Campaigns &mdash; all 23 with spend in the last 7 days</h2><div class="row"><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg red">RED</span></div>
+<div class="cnm2">RI | TOF | TRAFFIC | 30/04/2024</div>
+<div class="big2">0.00x <span class="dv dn">&darr; 100%</span></div><div class="sub">vs 0.35x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;4,144</b></div><div><i>CPM</i><b>&#8377;13 <span class="dv n">&uarr; 3%</span></b></div>
+<div><i>Purch</i><b>0 <span class="dv dn">&darr; 100%</span></b></div><div><i>CTR</i><b>6.77% <span class="dv dn">&darr; 16%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">Highgarden 2026</span><span class="bdg red">RED</span></div>
+<div class="cnm2">All_CAT_Sales_Campaign_(19/06/2026)</div>
+<div class="big2">1.76x <span class="dv dn">&darr; 56%</span></div><div class="sub">vs 4.04x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;6,696</b></div><div><i>CPM</i><b>&#8377;541 <span class="dv n">&uarr; 5%</span></b></div>
+<div><i>Purch</i><b>7 <span class="dv dn">&darr; 47%</span></b></div><div><i>CTR</i><b>6.57% <span class="dv dn">&darr; 13%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">Highgarden 2026</span><span class="bdg red">RED</span></div>
+<div class="cnm2">KOREAN_PJ_SETS_20_JULY_2026</div>
+<div class="big2">0.86x <span class="dv dn">&darr; 56%</span></div><div class="sub">vs 1.96x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;4,458</b></div><div><i>CPM</i><b>&#8377;558 <span class="dv up">&darr; 17%</span></b></div>
+<div><i>Purch</i><b>1 <span class="dv dn">&darr; 80%</span></b></div><div><i>CTR</i><b>4.26% <span class="dv up">&uarr; 0%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9shines international</span><span class="bdg red">RED</span></div>
+<div class="cnm2">RI_TOF_NIGHTY_UAE_JUNE_25_2026</div>
+<div class="big2">0.56x <span class="dv dn">&darr; 50%</span></div><div class="sub">vs 1.12x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;19,979</b></div><div><i>CPM</i><b>&#8377;1,700 <span class="dv dn">&uarr; 12%</span></b></div>
+<div><i>Purch</i><b>2 <span class="dv dn">&darr; 14%</span></b></div><div><i>CTR</i><b>2.89% <span class="dv dn">&darr; 11%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg amb">AMBER</span></div>
+<div class="cnm2">RI | TOF | ASC | LONG TSHIRT - VALUE | 09/10/2025</div>
+<div class="big2">3.64x <span class="dv dn">&darr; 30%</span></div><div class="sub">vs 5.17x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;5,839</b></div><div><i>CPM</i><b>&#8377;353 <span class="dv n">&uarr; 9%</span></b></div>
+<div><i>Purch</i><b>18 <span class="dv dn">&darr; 23%</span></b></div><div><i>CTR</i><b>3.97% <span class="dv n">&darr; 8%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">RI_TOF_ASC_NOOR_NIGHTIES_MARCH_09</div>
+<div class="big2">3.66x <span class="dv dn">&darr; 20%</span></div><div class="sub">vs 4.58x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;5,642</b></div><div><i>CPM</i><b>&#8377;323 <span class="dv n">&uarr; 2%</span></b></div>
+<div><i>Purch</i><b>11 <span class="dv n">&darr; 4%</span></b></div><div><i>CTR</i><b>5.67% <span class="dv dn">&darr; 11%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">RI | TOF | ASC |  SHORT NIGHTY |  07/02/2024</div>
+<div class="big2">3.67x <span class="dv dn">&darr; 18%</span></div><div class="sub">vs 4.46x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;6,158</b></div><div><i>CPM</i><b>&#8377;339 <span class="dv up">&darr; 2%</span></b></div>
+<div><i>Purch</i><b>18 <span class="dv n">&darr; 4%</span></b></div><div><i>CTR</i><b>3.77% <span class="dv up">&uarr; 2%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">Highgarden 2026</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">RI_TOF_ASC_DENIM_CO_ORDSET_JUNE_12_2026</div>
+<div class="big2">1.19x <span class="dv dn">&darr; 11%</span></div><div class="sub">vs 1.33x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;5,396</b></div><div><i>CPM</i><b>&#8377;643 <span class="dv dn">&uarr; 15%</span></b></div>
+<div><i>Purch</i><b>3 <span class="dv dn">&darr; 14%</span></b></div><div><i>CTR</i><b>3.47% <span class="dv up">&uarr; 3%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">SIGNATURE_CTATALOGUE_CAMPAIGN_28TH_JULY_26</div>
+<div class="big2">4.83x <span class="dv n">&darr; 9%</span></div><div class="sub">vs 5.31x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;6,200</b></div><div><i>CPM</i><b>&#8377;748 <span class="dv dn">&uarr; 21%</span></b></div>
+<div><i>Purch</i><b>14 <span class="dv up">&uarr; 11%</span></b></div><div><i>CTR</i><b>6.71% <span class="dv up">&uarr; 10%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">ALPINE_COLLECTION_CAMPAIGN_27_JULY_26</div>
+<div class="big2">5.25x <span class="dv n">&darr; 6%</span></div><div class="sub">vs 5.61x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;6,832</b></div><div><i>CPM</i><b>&#8377;625 <span class="dv n">&uarr; 5%</span></b></div>
+<div><i>Purch</i><b>16 <span class="dv n">&darr; 10%</span></b></div><div><i>CTR</i><b>5.58% <span class="dv n">&darr; 1%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">6_Months_Customer_List_8th_July_26</div>
+<div class="big2">2.78x <span class="dv n">&darr; 4%</span></div><div class="sub">vs 2.91x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;5,673</b></div><div><i>CPM</i><b>&#8377;448 <span class="dv up">&darr; 6%</span></b></div>
+<div><i>Purch</i><b>6 <span class="dv dn">&darr; 22%</span></b></div><div><i>CTR</i><b>5.38% <span class="dv dn">&darr; 24%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">Cst_Store_ Video_Sales_27_June_2026</div>
+<div class="big2">4.69x <span class="dv n">&darr; 1%</span></div><div class="sub">vs 4.76x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;8,284</b></div><div><i>CPM</i><b>&#8377;173 <span class="dv up">&darr; 21%</span></b></div>
+<div><i>Purch</i><b>23 <span class="dv up">&uarr; 25%</span></b></div><div><i>CTR</i><b>7.14% <span class="dv up">&uarr; 3%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">Highgarden 2026</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">BABY_DOLL_VIDEO_(19th_June_26)</div>
+<div class="big2">2.80x <span class="dv up">&uarr; 1%</span></div><div class="sub">vs 2.77x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;6,737</b></div><div><i>CPM</i><b>&#8377;262 <span class="dv up">&darr; 25%</span></b></div>
+<div><i>Purch</i><b>7 <span class="dv n">&darr; 3%</span></b></div><div><i>CTR</i><b>5.07% <span class="dv dn">&darr; 16%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">RI |PROSPECT | ALL PRODUCTS/NEW ARRIVALS | 03/07/2024</div>
+<div class="big2">5.61x <span class="dv up">&uarr; 11%</span></div><div class="sub">vs 5.06x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;8,789</b></div><div><i>CPM</i><b>&#8377;317 <span class="dv up">&darr; 18%</span></b></div>
+<div><i>Purch</i><b>21 <span class="dv up">&uarr; 5%</span></b></div><div><i>CTR</i><b>7.27% <span class="dv n">&darr; 2%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">Regal_Collection_Sales_Campaign_8th July</div>
+<div class="big2">5.40x <span class="dv up">&uarr; 13%</span></div><div class="sub">vs 4.77x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;5,862</b></div><div><i>CPM</i><b>&#8377;530 <span class="dv n">&uarr; 5%</span></b></div>
+<div><i>Purch</i><b>12 <span class="dv dn">&darr; 13%</span></b></div><div><i>CTR</i><b>4.37% <span class="dv n">&darr; 3%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">New_Customer_Only_Camp_05_July_2026</div>
+<div class="big2">4.08x <span class="dv up">&uarr; 21%</span></div><div class="sub">vs 3.37x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;9,252</b></div><div><i>CPM</i><b>&#8377;763 <span class="dv dn">&uarr; 12%</span></b></div>
+<div><i>Purch</i><b>8 <span class="dv dn">&darr; 30%</span></b></div><div><i>CTR</i><b>6.48% <span class="dv up">&uarr; 0%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">RI_TOF_ASC_PURE_COTTON_NIGHTY_FEB_05</div>
+<div class="big2">5.84x <span class="dv up">&uarr; 23%</span></div><div class="sub">vs 4.74x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;6,422</b></div><div><i>CPM</i><b>&#8377;430 <span class="dv up">&darr; 18%</span></b></div>
+<div><i>Purch</i><b>18 <span class="dv up">&uarr; 31%</span></b></div><div><i>CTR</i><b>5.73% <span class="dv dn">&darr; 17%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">RI | TOF | ASC | BAMBOO | 11/07/2025</div>
+<div class="big2">3.85x <span class="dv up">&uarr; 23%</span></div><div class="sub">vs 3.12x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;4,965</b></div><div><i>CPM</i><b>&#8377;402 <span class="dv up">&darr; 17%</span></b></div>
+<div><i>Purch</i><b>10 <span class="dv up">&uarr; 30%</span></b></div><div><i>CTR</i><b>5.25% <span class="dv n">&darr; 9%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">RI | TOF | ASC | DENIM | 02/09/2024</div>
+<div class="big2">7.78x <span class="dv up">&uarr; 31%</span></div><div class="sub">vs 5.93x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;6,678</b></div><div><i>CPM</i><b>&#8377;340 <span class="dv n">&uarr; 2%</span></b></div>
+<div><i>Purch</i><b>20 <span class="dv up">&uarr; 22%</span></b></div><div><i>CTR</i><b>4.59% <span class="dv up">&uarr; 2%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">RAYON_SALES_ CAMPAIGN_29_JULY_26</div>
+<div class="big2">5.60x <span class="dv up">&uarr; 51%</span></div><div class="sub">vs 3.71x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;5,309</b></div><div><i>CPM</i><b>&#8377;444 <span class="dv up">&darr; 16%</span></b></div>
+<div><i>Purch</i><b>10 <span class="dv up">&uarr; 34%</span></b></div><div><i>CTR</i><b>3.97% <span class="dv up">&uarr; 5%</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg new">NEW</span></div>
+<div class="cnm2">2891_Series_24th_Aug_26_Campaign</div>
+<div class="big2">1.52x <span class="dv n">&mdash;</span></div><div class="sub">new campaign</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;5,417</b></div><div><i>CPM</i><b>&#8377;723 <span class="dv n">&mdash;</span></b></div>
+<div><i>Purch</i><b>4 <span class="dv n">&mdash;</span></b></div><div><i>CTR</i><b>5.07% <span class="dv n">&mdash;</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg new">NEW</span></div>
+<div class="cnm2">A_Line_ Sales_22_Aug_2026</div>
+<div class="big2">5.53x <span class="dv n">&mdash;</span></div><div class="sub">new campaign</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;5,609</b></div><div><i>CPM</i><b>&#8377;841 <span class="dv n">&mdash;</span></b></div>
+<div><i>Purch</i><b>12 <span class="dv n">&mdash;</span></b></div><div><i>CTR</i><b>4.07% <span class="dv n">&mdash;</span></b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9 Shine 2023 CL</span><span class="bdg new">NEW</span></div>
+<div class="cnm2">Store_Map_4_Km_19_Aug_26_Campaign</div>
+<div class="big2">3.57x <span class="dv n">&mdash;</span></div><div class="sub">new campaign</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;2,647</b></div><div><i>CPM</i><b>&#8377;615 <span class="dv n">&mdash;</span></b></div>
+<div><i>Purch</i><b>3 <span class="dv n">&mdash;</span></b></div><div><i>CTR</i><b>3.34% <span class="dv n">&mdash;</span></b></div></div></div></div></div>
 
-<div class="tab-content" id="tab1">
-  <div class="charts-row">
-    <div class="chart-wrap"><canvas id="googRoasChart" height="220"></canvas></div>
-    <div class="chart-wrap"><canvas id="googCpaChart" height="220"></canvas></div>
-  </div>
-  <div class="section-title">Campaigns (10)</div>
-  <div class="grid">
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9shines label</span><span class="badge rag-red">RED</span></div>
-      <div class="camp-name">Search_Camp_15_July_2026</div>
-      <div class="metric-row"><span>ROAS</span><b>0.31x</b><span class="dev neg">&darr; 77.5%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;7,729</b></div>
-      <div class="metric-row"><span>Conversions</span><b>1.0</b><span class="dev neg">&darr; 79.7%</span></div>
-      <div class="metric-row"><span>CPA</span><b>&#8377;7,729</b><span class="dev neg">&uarr; 433.6%</span></div>
-      <div class="metric-row"><span>CTR</span><b>6.23%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9shines label</span><span class="badge rag-amber">AMBER</span></div>
-      <div class="camp-name">PMAX_SLEEVELESS_FROCKSTYLE_13/07/26</div>
-      <div class="metric-row"><span>ROAS</span><b>3.18x</b><span class="dev neg">&darr; 24.5%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;4,598</b></div>
-      <div class="metric-row"><span>Conversions</span><b>5.6</b><span class="dev neg">&darr; 20.5%</span></div>
-      <div class="metric-row"><span>CPA</span><b>&#8377;822</b><span class="dev neg">&uarr; 32.4%</span></div>
-      <div class="metric-row"><span>CTR</span><b>2.03%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9shines label</span><span class="badge rag-amber">AMBER</span></div>
-      <div class="camp-name">Long_Tshirts_utube - 2026-04-03</div>
-      <div class="metric-row"><span>ROAS</span><b>3.02x</b><span class="dev neg">&darr; 24.1%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;5,017</b></div>
-      <div class="metric-row"><span>Conversions</span><b>11.1</b><span class="dev neg">&darr; 7.1%</span></div>
-      <div class="metric-row"><span>CPA</span><b>&#8377;453</b><span class="dev neg">&uarr; 23.9%</span></div>
-      <div class="metric-row"><span>CTR</span><b>1.79%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9shines label</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">RI_MOF_Brand Search_16/02/2023</div>
-      <div class="metric-row"><span>ROAS</span><b>13.97x</b><span class="dev neg">&darr; 11.0%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;2,946</b></div>
-      <div class="metric-row"><span>Conversions</span><b>17.1</b><span class="dev neg">&darr; 10.8%</span></div>
-      <div class="metric-row"><span>CPA</span><b>&#8377;173</b><span class="dev pos">&darr; 5.8%</span></div>
-      <div class="metric-row"><span>CTR</span><b>55.21%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9shines label</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">PMAX_T_SHIRT_17TH_AUG_26</div>
-      <div class="metric-row"><span>ROAS</span><b>3.61x</b><span class="dev neg">&darr; 6.2%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;5,547</b></div>
-      <div class="metric-row"><span>Conversions</span><b>12.6</b><span class="dev pos">&uarr; 297.1%</span></div>
-      <div class="metric-row"><span>CPA</span><b>&#8377;441</b><span class="dev neg">&uarr; 1.5%</span></div>
-      <div class="metric-row"><span>CTR</span><b>2.37%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">Highgarden</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">Pmax- Denim_Baby Doll_21/June/26</div>
-      <div class="metric-row"><span>ROAS</span><b>1.22x</b><span class="dev pos">&uarr; 1.7%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;4,734</b></div>
-      <div class="metric-row"><span>Conversions</span><b>3.0</b><span class="dev pos">&uarr; 328.6%</span></div>
-      <div class="metric-row"><span>CPA</span><b>&#8377;1,578</b><span class="dev pos">&darr; 1.4%</span></div>
-      <div class="metric-row"><span>CTR</span><b>2.39%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">Highgarden</span><span class="badge rag-red">RED</span></div>
-      <div class="camp-name">Pmax (08--April--2026) (Short Nighty & Tshirts)</div>
-      <div class="metric-row"><span>ROAS</span><b>0.87x</b><span class="dev pos">&uarr; 10.1%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;5,217</b></div>
-      <div class="metric-row"><span>Conversions</span><b>4.0</b><span class="dev pos">&uarr; 328.6%</span></div>
-      <div class="metric-row"><span>CPA</span><b>&#8377;1,304</b><span class="dev pos">&darr; 9.3%</span></div>
-      <div class="metric-row"><span>CTR</span><b>1.56%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9shines label</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">PMAX_13_AUG_26_ALP_RAY_SAT</div>
-      <div class="metric-row"><span>ROAS</span><b>8.17x</b><span class="dev pos">&uarr; 10.4%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;5,309</b></div>
-      <div class="metric-row"><span>Conversions</span><b>22.2</b><span class="dev pos">&uarr; 206.9%</span></div>
-      <div class="metric-row"><span>CPA</span><b>&#8377;239</b><span class="dev pos">&darr; 19.5%</span></div>
-      <div class="metric-row"><span>CTR</span><b>2.23%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">9shines label</span><span class="badge rag-green">GREEN</span></div>
-      <div class="camp-name">PMAX_PCN_DENIM_24_JULY_26</div>
-      <div class="metric-row"><span>ROAS</span><b>5.51x</b><span class="dev pos">&uarr; 19.3%</span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;4,605</b></div>
-      <div class="metric-row"><span>Conversions</span><b>10.8</b><span class="dev pos">&uarr; 6.2%</span></div>
-      <div class="metric-row"><span>CPA</span><b>&#8377;427</b><span class="dev pos">&darr; 8.3%</span></div>
-      <div class="metric-row"><span>CTR</span><b>2.02%</b></div>
-    </div>
-    <div class="card camp-card">
-      <div class="card-top"><span class="pill">Highgarden</span><span class="badge rag-red">RED</span></div>
-      <div class="camp-name">PMAX (Pajama Sets) 03/05/2026</div>
-      <div class="metric-row"><span>ROAS</span><b>0.00x</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>Spend</span><b>&#8377;4,731</b></div>
-      <div class="metric-row"><span>Conversions</span><b>0.0</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>CPA</span><b>&#8377;0</b><span class="dev pos"></span></div>
-      <div class="metric-row"><span>CTR</span><b>1.50%</b></div>
-    </div></div>
-</div>
+<div class="pane" id="goog">
+<h2 class="sh">Campaign health &mdash; 9shines label + Highgarden</h2><div class="row"><div class="card sm"><div class="chd"><span class="pill">9shines label</span><span class="bdg red">RED</span></div>
+<div class="cnm2">PMAX_SLEEVELESS_FROCKSTYLE_13/07/26</div>
+<div class="big2">2.42x <span class="dv dn">&darr; 46%</span></div><div class="sub">vs 4.50x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;4,611</b></div><div><i>Conv</i><b>4.4 <span class="dv dn">&darr; 43%</span></b></div>
+<div><i>CPA</i><b>&#8377;1,045 <span class="dv dn">&uarr; 77%</span></b></div><div><i>CTR</i><b>1.64%</b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9shines label</span><span class="bdg red">RED</span></div>
+<div class="cnm2">PMAX_13_AUG_26_ALP_RAY_SAT</div>
+<div class="big2">3.60x <span class="dv dn">&darr; 44%</span></div><div class="sub">vs 6.42x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;5,674</b></div><div><i>Conv</i><b>10.6 <span class="dv up">&uarr; 0%</span></b></div>
+<div><i>CPA</i><b>&#8377;536 <span class="dv dn">&uarr; 63%</span></b></div><div><i>CTR</i><b>1.94%</b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9shines label</span><span class="bdg amb">AMBER</span></div>
+<div class="cnm2">Long_Tshirts_utube - 2026-04-03</div>
+<div class="big2">2.15x <span class="dv dn">&darr; 37%</span></div><div class="sub">vs 3.39x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;4,562</b></div><div><i>Conv</i><b>10.3 <span class="dv n">&darr; 7%</span></b></div>
+<div><i>CPA</i><b>&#8377;444 <span class="dv n">&uarr; 6%</span></b></div><div><i>CTR</i><b>1.86%</b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9shines label</span><span class="bdg red">RED</span></div>
+<div class="cnm2">PMAX_T_SHIRT_17TH_AUG_26</div>
+<div class="big2">2.32x <span class="dv dn">&darr; 27%</span></div><div class="sub">vs 3.18x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;4,634</b></div><div><i>Conv</i><b>8.8 <span class="dv up">&uarr; 68%</span></b></div>
+<div><i>CPA</i><b>&#8377;525 <span class="dv dn">&uarr; 12%</span></b></div><div><i>CTR</i><b>2.24%</b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9shines label</span><span class="bdg amb">AMBER</span></div>
+<div class="cnm2">RI_MOF_Brand Search_16/02/2023</div>
+<div class="big2">11.89x <span class="dv dn">&darr; 24%</span></div><div class="sub">vs 15.62x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;2,151</b></div><div><i>Conv</i><b>11.6 <span class="dv dn">&darr; 34%</span></b></div>
+<div><i>CPA</i><b>&#8377;186 <span class="dv n">&uarr; 10%</span></b></div><div><i>CTR</i><b>47.79%</b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9shines label</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">PMAX_PCN_DENIM_24_JULY_26</div>
+<div class="big2">5.91x <span class="dv up">&uarr; 17%</span></div><div class="sub">vs 5.05x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;4,596</b></div><div><i>Conv</i><b>10.9 <span class="dv n">&darr; 1%</span></b></div>
+<div><i>CPA</i><b>&#8377;423 <span class="dv up">&darr; 3%</span></b></div><div><i>CTR</i><b>2.46%</b></div></div></div><div class="card sm"><div class="chd"><span class="pill">Highgarden</span><span class="bdg red">RED</span></div>
+<div class="cnm2">Pmax- Denim_Baby Doll_21/June/26</div>
+<div class="big2">2.82x <span class="dv up">&uarr; 45%</span></div><div class="sub">vs 1.95x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;3,931</b></div><div><i>Conv</i><b>6 <span class="dv up">&uarr; 186%</span></b></div>
+<div><i>CPA</i><b>&#8377;655 <span class="dv up">&darr; 32%</span></b></div><div><i>CTR</i><b>2.57%</b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9shines label</span><span class="bdg grn">GREEN</span></div>
+<div class="cnm2">Search_Camp_15_July_2026</div>
+<div class="big2">2.48x <span class="dv up">&uarr; 60%</span></div><div class="sub">vs 1.55x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;7,554</b></div><div><i>Conv</i><b>8.2 <span class="dv up">&uarr; 59%</span></b></div>
+<div><i>CPA</i><b>&#8377;926 <span class="dv up">&darr; 35%</span></b></div><div><i>CTR</i><b>6.83%</b></div></div></div><div class="card sm"><div class="chd"><span class="pill">Highgarden</span><span class="bdg red">RED</span></div>
+<div class="cnm2">Pmax (08--April--2026) (Short Nighty &amp; Tshirts)</div>
+<div class="big2">3.27x <span class="dv up">&uarr; 68%</span></div><div class="sub">vs 1.95x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;4,261</b></div><div><i>Conv</i><b>11 <span class="dv up">&uarr; 214%</span></b></div>
+<div><i>CPA</i><b>&#8377;387 <span class="dv up">&darr; 39%</span></b></div><div><i>CTR</i><b>2.61%</b></div></div></div><div class="card sm"><div class="chd"><span class="pill">Highgarden</span><span class="bdg red">RED</span></div>
+<div class="cnm2">PMAX (Pajama Sets) 03/05/2026</div>
+<div class="big2">0.75x <span class="dv up">&uarr; 92%</span></div><div class="sub">vs 0.39x</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;5,194</b></div><div><i>Conv</i><b>2 <span class="dv up">&uarr; 329%</span></b></div>
+<div><i>CPA</i><b>&#8377;2,597 <span class="dv up">&darr; 48%</span></b></div><div><i>CTR</i><b>2.59%</b></div></div></div><div class="card sm"><div class="chd"><span class="pill">9shines label</span><span class="bdg new">NEW</span></div>
+<div class="cnm2">Pmax_ Bamb_C.Blend_Hos_26th_AUG</div>
+<div class="big2">1.61x <span class="dv n">&mdash;</span></div><div class="sub">new campaign</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;4,758</b></div><div><i>Conv</i><b>4.3 <span class="dv n">&mdash;</span></b></div>
+<div><i>CPA</i><b>&#8377;1,115 <span class="dv n">&mdash;</span></b></div><div><i>CTR</i><b>2.07%</b></div></div></div><div class="card sm"><div class="chd"><span class="pill">Highgarden</span><span class="bdg new">NEW</span></div>
+<div class="cnm2">Baby_Doll_Video_28_Aug_26</div>
+<div class="big2">0.00x <span class="dv n">&mdash;</span></div><div class="sub">new campaign</div>
+<div class="grid4"><div><i>Spend</i><b>&#8377;850</b></div><div><i>Conv</i><b>0 <span class="dv n">&mdash;</span></b></div>
+<div><i>CPA</i><b>&mdash; <span class="dv n">&mdash;</span></b></div><div><i>CTR</i><b>1.27%</b></div></div></div></div>
+<h2 class="sh">Baseline comparison</h2>
+<div class="row" style="grid-template-columns:repeat(auto-fill,minmax(340px,1fr))">
+<div class="chw"><canvas id="c3"></canvas></div><div class="chw"><canvas id="c4"></canvas></div></div></div>
 
-<div class="tab-content" id="tab2">
-  <div class="section-title">Compound Dependencies</div>
-  <div class="grid">
-    <div class="card dep-card sev-warning">
-      <div class="card-top"><span class="badge sev-badge-warning">WARNING</span><h3>Creative fatigue</h3></div>
-      <div class="dep-entity">Meta · 9 Shine 2023 CL · New_Customer_Only_Camp_05_July_2026</div>
-      <div class="dep-detail">CPM +21% and ROAS -40% — creative likely fatigued</div>
-    </div>
-    <div class="card dep-card sev-critical">
-      <div class="card-top"><span class="badge sev-badge-critical">CRITICAL</span><h3>Pixel failure risk</h3></div>
-      <div class="dep-entity">Meta · 9shines international</div>
-      <div class="dep-detail">Spend Rs2931 yesterday with 0 purchases recorded</div>
-    </div></div>
-  <div class="section-title">All Alerts (17)</div>
-  <div>
-    <div class="alert-row sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <span class="alert-entity">Meta · Highgarden 2026 · Pj_Sets_Camp_20_Aug_26</span>
-      <span class="alert-type">ROAS below 1.0x</span>
-      <span class="alert-detail">7d ROAS 0.25x is below breakeven, spend Rs3817</span>
-    </div>
-    <div class="alert-row sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <span class="alert-entity">Meta · Highgarden 2026 · Chmeise_Dress_Campaign_15th_Aug_26</span>
-      <span class="alert-type">ROAS drop</span>
-      <span class="alert-detail">ROAS 1.38x vs baseline 4.61x (-70.1%)</span>
-    </div>
-    <div class="alert-row sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <span class="alert-entity">Meta · Highgarden 2026 · KOREAN_PJ_SETS_20_JULY_2026</span>
-      <span class="alert-type">ROAS drop</span>
-      <span class="alert-detail">ROAS 0.94x vs baseline 3.40x (-72.3%)</span>
-    </div>
-    <div class="alert-row sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <span class="alert-entity">Meta · Highgarden 2026 · KOREAN_PJ_SETS_20_JULY_2026</span>
-      <span class="alert-type">ROAS below 1.0x</span>
-      <span class="alert-detail">7d ROAS 0.94x is below breakeven, spend Rs5093</span>
-    </div>
-    <div class="alert-row sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <span class="alert-entity">Google · 9shines label · Search_Camp_15_July_2026</span>
-      <span class="alert-type">ROAS drop</span>
-      <span class="alert-detail">ROAS 0.31x vs baseline 1.38x (-77.5%)</span>
-    </div>
-    <div class="alert-row sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <span class="alert-entity">Google · 9shines label · Search_Camp_15_July_2026</span>
-      <span class="alert-type">ROAS below 1.0x</span>
-      <span class="alert-detail">7d ROAS 0.31x, spend Rs7729</span>
-    </div>
-    <div class="alert-row sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <span class="alert-entity">Google · Highgarden · Pmax (08--April--2026) (Short Nighty & Tshirts)</span>
-      <span class="alert-type">ROAS below 1.0x</span>
-      <span class="alert-detail">7d ROAS 0.87x, spend Rs5217</span>
-    </div>
-    <div class="alert-row sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <span class="alert-entity">Google · Highgarden · PMAX (Pajama Sets) 03/05/2026</span>
-      <span class="alert-type">ROAS below 1.0x</span>
-      <span class="alert-detail">7d ROAS 0.00x, spend Rs4731</span>
-    </div>
-    <div class="alert-row sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <span class="alert-entity">Meta · Highgarden 2026</span>
-      <span class="alert-type">ROAS drop</span>
-      <span class="alert-detail">ROAS 1.94x vs baseline 3.13x (-38.1%)</span>
-    </div>
-    <div class="alert-row sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <span class="alert-entity">Meta · 9 Shine 2023 CL · Regal_Collection_Sales_Campaign_8th July</span>
-      <span class="alert-type">ROAS drop</span>
-      <span class="alert-detail">ROAS 3.21x vs baseline 4.82x (-33.5%)</span>
-    </div>
-    <div class="alert-row sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <span class="alert-entity">Meta · 9 Shine 2023 CL · New_Customer_Only_Camp_05_July_2026</span>
-      <span class="alert-type">ROAS drop</span>
-      <span class="alert-detail">ROAS 1.80x vs baseline 3.00x (-39.9%)</span>
-    </div>
-    <div class="alert-row sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <span class="alert-entity">Meta · Highgarden 2026 · BABY_DOLL_VIDEO_(19th_June_26)</span>
-      <span class="alert-type">ROAS drop</span>
-      <span class="alert-detail">ROAS 2.18x vs baseline 3.09x (-29.6%)</span>
-    </div>
-    <div class="alert-row sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <span class="alert-entity">Google · 9shines label · Search_Camp_15_July_2026</span>
-      <span class="alert-type">CPA increase</span>
-      <span class="alert-detail">CPA Rs7729 vs baseline Rs1449 (+433.6%)</span>
-    </div>
-    <div class="alert-row sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <span class="alert-entity">Google · 9shines label · Long_Tshirts_utube - 2026-04-03</span>
-      <span class="alert-type">ROAS drop</span>
-      <span class="alert-detail">ROAS 3.02x vs baseline 3.98x (-24.1%)</span>
-    </div>
-    <div class="alert-row sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <span class="alert-entity">Google · 9shines label · PMAX_SLEEVELESS_FROCKSTYLE_13/07/26</span>
-      <span class="alert-type">ROAS drop</span>
-      <span class="alert-detail">ROAS 3.18x vs baseline 4.21x (-24.5%)</span>
-    </div>
-    <div class="alert-row sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <span class="alert-entity">Google · 9shines label · PMAX_SLEEVELESS_FROCKSTYLE_13/07/26</span>
-      <span class="alert-type">CPA increase</span>
-      <span class="alert-detail">CPA Rs822 vs baseline Rs621 (+32.4%)</span>
-    </div>
-    <div class="alert-row sev-info">
-      <span class="badge sev-badge-info">INFO</span>
-      <span class="alert-entity">Meta · Highgarden 2026</span>
-      <span class="alert-type">CPM spike</span>
-      <span class="alert-detail">CPM Rs519 vs baseline Rs394 (+31.8%)</span>
-    </div></div>
-</div>
+<div class="pane" id="disc">
+<h2 class="sh">Compound patterns detected</h2><div class="row"><div class="card dep"><div class="chd"><span class="cnm">Pixel / conversion tracking failure risk</span><span class="bdg red">CRITICAL</span></div>
+<div class="sub">9 Shine 2023 CL - RI | TOF | TRAFFIC | 30/04/2024</div><div class="dtl">Rs4,144 spent in 7d with zero recorded conversions - verify pixel + conversion action</div></div></div>
+<h2 class="sh">All active alerts</h2><div class="alist"><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Meta - 9shines international</b><span class="aty">ROAS below 1.0x</span><span class="adt">ROAS 0.56x on Rs19,979 spend - losing money on ad-attributed revenue</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Meta - 9shines international</b><span class="aty">ROAS collapse</span><span class="adt">ROAS 0.56x vs baseline 1.12x (-50%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Meta - 9 Shine 2023 CL - RI | TOF | TRAFFIC | 30/04/2024</b><span class="aty">ROAS below 1.0x</span><span class="adt">ROAS 0.00x on Rs4,144 spend - losing money on ad-attributed revenue</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Meta - 9 Shine 2023 CL - RI | TOF | TRAFFIC | 30/04/2024</b><span class="aty">ROAS collapse</span><span class="adt">ROAS 0.00x vs baseline 0.35x (-100%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Meta - 9 Shine 2023 CL - RI | TOF | TRAFFIC | 30/04/2024</b><span class="aty">Conversions collapse</span><span class="adt">0 conversions vs baseline 0.5 (-100%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Meta - Highgarden 2026 - KOREAN_PJ_SETS_20_JULY_2026</b><span class="aty">ROAS below 1.0x</span><span class="adt">ROAS 0.86x on Rs4,458 spend - losing money on ad-attributed revenue</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Meta - Highgarden 2026 - KOREAN_PJ_SETS_20_JULY_2026</b><span class="aty">ROAS collapse</span><span class="adt">ROAS 0.86x vs baseline 1.96x (-56%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Meta - Highgarden 2026 - KOREAN_PJ_SETS_20_JULY_2026</b><span class="aty">Conversions collapse</span><span class="adt">1 conversions vs baseline 4.9 (-80%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Meta - Highgarden 2026 - All_CAT_Sales_Campaign_(19/06/2026)</b><span class="aty">ROAS collapse</span><span class="adt">ROAS 1.76x vs baseline 4.04x (-56%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Meta - 9shines international - RI_TOF_NIGHTY_UAE_JUNE_25_2026</b><span class="aty">ROAS below 1.0x</span><span class="adt">ROAS 0.56x on Rs19,979 spend - losing money on ad-attributed revenue</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Meta - 9shines international - RI_TOF_NIGHTY_UAE_JUNE_25_2026</b><span class="aty">ROAS collapse</span><span class="adt">ROAS 0.56x vs baseline 1.12x (-50%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Google - 9shines label - PMAX_13_AUG_26_ALP_RAY_SAT</b><span class="aty">ROAS collapse</span><span class="adt">ROAS 3.60x vs baseline 6.42x (-44%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Google - 9shines label - PMAX_13_AUG_26_ALP_RAY_SAT</b><span class="aty">Spend spike</span><span class="adt">Spend Rs5,674 vs baseline Rs3,472 (+63%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Google - 9shines label - PMAX_T_SHIRT_17TH_AUG_26</b><span class="aty">Spend spike</span><span class="adt">Spend Rs4,634 vs baseline Rs2,456 (+89%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Google - 9shines label - PMAX_SLEEVELESS_FROCKSTYLE_13/07/26</b><span class="aty">ROAS collapse</span><span class="adt">ROAS 2.42x vs baseline 4.50x (-46%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Google - Highgarden - PMAX (Pajama Sets) 03/05/2026</b><span class="aty">ROAS below 1.0x</span><span class="adt">ROAS 0.75x on Rs5,194 spend - losing money on ad-attributed revenue</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Google - Highgarden - PMAX (Pajama Sets) 03/05/2026</b><span class="aty">Spend spike</span><span class="adt">Spend Rs5,194 vs baseline Rs2,316 (+124%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Google - Highgarden - Pmax (08--April--2026) (Short Nighty &amp; Tshirts)</b><span class="aty">Spend spike</span><span class="adt">Spend Rs4,261 vs baseline Rs2,211 (+93%)</span></div></div><div class="arow"><span class="bdg red">CRITICAL</span><div class="atx"><b>Google - Highgarden - Pmax- Denim_Baby Doll_21/June/26</b><span class="aty">Spend spike</span><span class="adt">Spend Rs3,931 vs baseline Rs2,022 (+94%)</span></div></div><div class="arow"><span class="bdg amb">WARNING</span><div class="atx"><b>Meta - Highgarden 2026</b><span class="aty">ROAS decline</span><span class="adt">ROAS 1.55x vs baseline 2.49x (-38%)</span></div></div><div class="arow"><span class="bdg amb">WARNING</span><div class="atx"><b>Meta - 9 Shine 2023 CL - RI | TOF | ASC | LONG TSHIRT - VALUE | 09/10/2025</b><span class="aty">ROAS decline</span><span class="adt">ROAS 3.64x vs baseline 5.17x (-30%)</span></div></div><div class="arow"><span class="bdg amb">WARNING</span><div class="atx"><b>Google - 9shines label - PMAX_13_AUG_26_ALP_RAY_SAT</b><span class="aty">CPA increase</span><span class="adt">CPA Rs536 vs baseline Rs328 (+63%)</span></div></div><div class="arow"><span class="bdg amb">WARNING</span><div class="atx"><b>Google - 9shines label - PMAX_T_SHIRT_17TH_AUG_26</b><span class="aty">ROAS decline</span><span class="adt">ROAS 2.32x vs baseline 3.18x (-27%)</span></div></div><div class="arow"><span class="bdg amb">WARNING</span><div class="atx"><b>Google - 9shines label - PMAX_SLEEVELESS_FROCKSTYLE_13/07/26</b><span class="aty">CPA increase</span><span class="adt">CPA Rs1,045 vs baseline Rs589 (+77%)</span></div></div><div class="arow"><span class="bdg amb">WARNING</span><div class="atx"><b>Google - 9shines label - Long_Tshirts_utube - 2026-04-03</b><span class="aty">ROAS decline</span><span class="adt">ROAS 2.15x vs baseline 3.39x (-37%)</span></div></div><div class="arow"><span class="bdg amb">WARNING</span><div class="atx"><b>Google - 9shines label - RI_MOF_Brand Search_16/02/2023</b><span class="aty">ROAS decline</span><span class="adt">ROAS 11.89x vs baseline 15.62x (-24%)</span></div></div><div class="arow"><span class="bdg amb">WARNING</span><div class="atx"><b>Google - Highgarden - Baby_Doll_Video_28_Aug_26</b><span class="aty">New campaign below breakeven</span><span class="adt">ROAS 0.00x on Rs850 in first days - still in learning, watch closely</span></div></div><div class="arow"><span class="bdg inf">INFO</span><div class="atx"><b>Meta - 9 Shine 2023 CL - SIGNATURE_CTATALOGUE_CAMPAIGN_28TH_JULY_26</b><span class="aty">CPM inflation</span><span class="adt">CPM Rs748 vs baseline Rs620 (+21%)</span></div></div><div class="arow"><span class="bdg inf">INFO</span><div class="atx"><b>Meta - 9 Shine 2023 CL - RI_TOF_ASC_NOOR_NIGHTIES_MARCH_09</b><span class="aty">ROAS softening</span><span class="adt">ROAS 3.66x vs baseline 4.58x (-20%)</span></div></div><div class="arow"><span class="bdg inf">INFO</span><div class="atx"><b>Meta - 9 Shine 2023 CL - RI | TOF | ASC |  SHORT NIGHTY |  07/02/2024</b><span class="aty">ROAS softening</span><span class="adt">ROAS 3.67x vs baseline 4.46x (-18%)</span></div></div><div class="arow"><span class="bdg inf">INFO</span><div class="atx"><b>Meta - Highgarden 2026 - RI_TOF_ASC_DENIM_CO_ORDSET_JUNE_12_2026</b><span class="aty">ROAS softening</span><span class="adt">ROAS 1.19x vs baseline 1.33x (-11%)</span></div></div><div class="arow"><span class="bdg inf">INFO</span><div class="atx"><b>Google - 9shines label - RI_MOF_Brand Search_16/02/2023</b><span class="aty">Spend shift</span><span class="adt">Spend Rs2,151 vs baseline Rs2,977 (-28%)</span></div></div></div></div>
 
-<div class="tab-content" id="tab3">
-  <div class="banner">
-    <div class="banner-title">Consolidated Performance &mdash; Yesterday (2026-08-25)</div>
-    <div class="metric-grid">
-      <div class="metric-chip"><div class="lbl">Spend</div><div class="val">&#8377;30,550</div></div>
-      <div class="metric-chip"><div class="lbl">Attributed Revenue</div><div class="val">&#8377;97,332</div></div>
-      <div class="metric-chip"><div class="lbl">Attributed Purchases</div><div class="val">46.6</div></div>
-      <div class="metric-chip"><div class="lbl">CPA</div><div class="val">&#8377;656</div></div>
-      <div class="metric-chip chip-green"><div class="lbl">ROAS</div><div class="val">3.19x</div></div>
-      <div class="metric-chip"><div class="lbl">ASP / AOV</div><div class="val">&#8377;2,089</div></div>
-      <div class="metric-chip"><div class="lbl">International Orders</div><div class="val">0</div><div class="sub">9shines intl</div></div>
-      <div class="metric-chip"><div class="lbl">New Customer Revenue</div><div class="val">&#8377;30,471</div><div class="sub">Shopify &#183; 15 orders</div></div>
-      <div class="metric-chip"><div class="lbl">Existing Customer Revenue</div><div class="val">&#8377;9,680</div><div class="sub">Shopify &#183; 6 orders</div></div>
-    </div>
-  </div>
-  <div class="section-title">Meta Ads &mdash; Yesterday (2026-08-25)</div>
-  <table><thead><tr><th>Account</th><th>ROAS</th><th>Spend</th><th>Purchases</th><th>CPM</th><th>CTR</th><th>ATC</th><th>Checkouts</th></tr></thead>
-  <tbody><tr><td>9 Shine 2023 CL</td><td class="">4.17x</td><td>&#8377;18,202</td><td>35</td><td>&#8377;252</td><td>6.88%</td><td>297</td><td>136</td></tr><tr><td>Highgarden 2026</td><td class="">3.17x</td><td>&#8377;2,738</td><td>4</td><td>&#8377;493</td><td>4.43%</td><td>14</td><td>6</td></tr><tr><td>9shines international</td><td class="roas-bad">0.00x <span class="warn-tri">&#9650;</span></td><td>&#8377;2,931</td><td>0</td><td>&#8377;1,506</td><td>2.11%</td><td>12</td><td>3</td></tr></tbody></table>
-  <div class="section-title">Google Ads &mdash; Yesterday (2026-08-25)</div>
-  <table><thead><tr><th>Account</th><th>ROAS</th><th>Spend</th><th>Conversions</th><th>CPA</th><th>CTR</th></tr></thead>
-  <tbody><tr><td>9shines label</td><td class="">1.92x</td><td>&#8377;4,778</td><td>5.6</td><td>&#8377;853</td><td>&mdash;</td></tr><tr><td>Highgarden</td><td class="">1.89x</td><td>&#8377;1,902</td><td>2.0</td><td>&#8377;951</td><td>&mdash;</td></tr></tbody></table>
-</div>
+<div class="pane" id="yest">
+<div class="banner"><div class="bl">Consolidated performance &mdash; yesterday (2026-09-01)</div><div class="chips"><div class="chip "><i>SPEND</i><b>&#8377;30,960</b></div><div class="chip "><i>ATTRIBUTED REVENUE</i><b>&#8377;117,578</b></div><div class="chip "><i>ATTRIBUTED PURCHASES</i><b>45.9</b></div><div class="chip "><i>CPA</i><b>&#8377;675</b></div><div class="chip ok"><i>ROAS</i><b>3.80x</b></div><div class="chip "><i>ASP / AOV</i><b>&#8377;2,562</b></div><div class="chip bad"><i>INTERNATIONAL ORDERS</i><b>0</b><span class="cn">9shines intl</span></div><div class="chip "><i>NEW CUSTOMER REVENUE</i><b>&#8377;18,424</b><span class="cn">Shopify &#183; 11 orders</span></div><div class="chip "><i>EXISTING CUSTOMER REVENUE</i><b>&#8377;61,508</b><span class="cn">Shopify &#183; 19 orders</span></div></div></div>
+<div class="note">Shopify split covers 30 orders marked paid on 2026-09-01 (&#8377;79,931). 25 further orders worth ~&#8377;85,942 were still <b>pending</b> (typically COD) and are excluded per the paid-only rule &mdash; true store revenue for the day is materially higher than the split shown.</div>
+<h2 class="sh">Meta Ads &mdash; yesterday (2026-09-01)</h2>
+<table><tr><th>Account</th><th>ROAS</th><th>Spend</th><th>Purchases</th><th>CPM</th><th>CTR</th><th>ATC</th><th>Checkouts</th></tr><tr><td>9 Shine 2023 CL</td><td>5.24x</td><td>&#8377;17,263</td><td>33</td><td>&#8377;184</td><td>7.28%</td><td>373</td><td>241</td></tr><tr><td>Highgarden 2026</td><td>3.45x</td><td>&#8377;3,394</td><td>5</td><td>&#8377;473</td><td>5.13%</td><td>28</td><td>16</td></tr><tr><td>9shines international</td><td><span class="bad">0.00x &#9651;</span></td><td>&#8377;2,996</td><td>0</td><td>&#8377;1,868</td><td>2.93%</td><td>4</td><td>5</td></tr></table>
+<h2 class="sh">Google Ads &mdash; yesterday (2026-09-01)</h2>
+<table><tr><th>Account</th><th>ROAS</th><th>Spend</th><th>Conversions</th><th>CPA</th><th>CTR</th></tr><tr><td>9shines label</td><td>2.81x</td><td>&#8377;5,113</td><td>6.9</td><td>&#8377;741</td><td>&mdash;</td></tr><tr><td>Highgarden</td><td><span class="bad">0.46x &#9651;</span></td><td>&#8377;2,194</td><td>1</td><td>&#8377;2,194</td><td>&mdash;</td></tr></table></div>
 
-<div class="tab-content" id="tab4">
-  <div class="section-title">Prioritised Action Items</div>
-  
-    <div class="action-item sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS below 1.0x &mdash; 7d ROAS 0.25x is below breakeven, spend Rs3817</div>
-        <div><b>Where:</b> Meta · Highgarden 2026 · Pj_Sets_Camp_20_Aug_26</div>
-        <div><b>Action:</b> Pause or drastically cut budget — campaign is losing money on every rupee spent.</div>
-        <div><b>Expected outcome:</b> Stop the bleed; reallocate budget to profitable campaigns.</div>
-      </div>
-    </div>
-    <div class="action-item sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS drop &mdash; ROAS 1.38x vs baseline 4.61x (-70.1%)</div>
-        <div><b>Where:</b> Meta · Highgarden 2026 · Chmeise_Dress_Campaign_15th_Aug_26</div>
-        <div><b>Action:</b> Review targeting/creative; consider reducing budget by 20-30% until ROAS recovers.</div>
-        <div><b>Expected outcome:</b> Restore ROAS closer to 30-day baseline.</div>
-      </div>
-    </div>
-    <div class="action-item sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS drop &mdash; ROAS 0.94x vs baseline 3.40x (-72.3%)</div>
-        <div><b>Where:</b> Meta · Highgarden 2026 · KOREAN_PJ_SETS_20_JULY_2026</div>
-        <div><b>Action:</b> Review targeting/creative; consider reducing budget by 20-30% until ROAS recovers.</div>
-        <div><b>Expected outcome:</b> Restore ROAS closer to 30-day baseline.</div>
-      </div>
-    </div>
-    <div class="action-item sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS below 1.0x &mdash; 7d ROAS 0.94x is below breakeven, spend Rs5093</div>
-        <div><b>Where:</b> Meta · Highgarden 2026 · KOREAN_PJ_SETS_20_JULY_2026</div>
-        <div><b>Action:</b> Pause or drastically cut budget — campaign is losing money on every rupee spent.</div>
-        <div><b>Expected outcome:</b> Stop the bleed; reallocate budget to profitable campaigns.</div>
-      </div>
-    </div>
-    <div class="action-item sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS drop &mdash; ROAS 0.31x vs baseline 1.38x (-77.5%)</div>
-        <div><b>Where:</b> Google · 9shines label · Search_Camp_15_July_2026</div>
-        <div><b>Action:</b> Review targeting/creative; consider reducing budget by 20-30% until ROAS recovers.</div>
-        <div><b>Expected outcome:</b> Restore ROAS closer to 30-day baseline.</div>
-      </div>
-    </div>
-    <div class="action-item sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS below 1.0x &mdash; 7d ROAS 0.31x, spend Rs7729</div>
-        <div><b>Where:</b> Google · 9shines label · Search_Camp_15_July_2026</div>
-        <div><b>Action:</b> Pause or drastically cut budget — campaign is losing money on every rupee spent.</div>
-        <div><b>Expected outcome:</b> Stop the bleed; reallocate budget to profitable campaigns.</div>
-      </div>
-    </div>
-    <div class="action-item sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS below 1.0x &mdash; 7d ROAS 0.87x, spend Rs5217</div>
-        <div><b>Where:</b> Google · Highgarden · Pmax (08--April--2026) (Short Nighty & Tshirts)</div>
-        <div><b>Action:</b> Pause or drastically cut budget — campaign is losing money on every rupee spent.</div>
-        <div><b>Expected outcome:</b> Stop the bleed; reallocate budget to profitable campaigns.</div>
-      </div>
-    </div>
-    <div class="action-item sev-critical">
-      <span class="badge sev-badge-critical">CRITICAL</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS below 1.0x &mdash; 7d ROAS 0.00x, spend Rs4731</div>
-        <div><b>Where:</b> Google · Highgarden · PMAX (Pajama Sets) 03/05/2026</div>
-        <div><b>Action:</b> Pause or drastically cut budget — campaign is losing money on every rupee spent.</div>
-        <div><b>Expected outcome:</b> Stop the bleed; reallocate budget to profitable campaigns.</div>
-      </div>
-    </div>
-    <div class="action-item sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS drop &mdash; ROAS 1.94x vs baseline 3.13x (-38.1%)</div>
-        <div><b>Where:</b> Meta · Highgarden 2026</div>
-        <div><b>Action:</b> Review targeting/creative; consider reducing budget by 20-30% until ROAS recovers.</div>
-        <div><b>Expected outcome:</b> Restore ROAS closer to 30-day baseline.</div>
-      </div>
-    </div>
-    <div class="action-item sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS drop &mdash; ROAS 3.21x vs baseline 4.82x (-33.5%)</div>
-        <div><b>Where:</b> Meta · 9 Shine 2023 CL · Regal_Collection_Sales_Campaign_8th July</div>
-        <div><b>Action:</b> Review targeting/creative; consider reducing budget by 20-30% until ROAS recovers.</div>
-        <div><b>Expected outcome:</b> Restore ROAS closer to 30-day baseline.</div>
-      </div>
-    </div>
-    <div class="action-item sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS drop &mdash; ROAS 1.80x vs baseline 3.00x (-39.9%)</div>
-        <div><b>Where:</b> Meta · 9 Shine 2023 CL · New_Customer_Only_Camp_05_July_2026</div>
-        <div><b>Action:</b> Review targeting/creative; consider reducing budget by 20-30% until ROAS recovers.</div>
-        <div><b>Expected outcome:</b> Restore ROAS closer to 30-day baseline.</div>
-      </div>
-    </div>
-    <div class="action-item sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS drop &mdash; ROAS 2.18x vs baseline 3.09x (-29.6%)</div>
-        <div><b>Where:</b> Meta · Highgarden 2026 · BABY_DOLL_VIDEO_(19th_June_26)</div>
-        <div><b>Action:</b> Review targeting/creative; consider reducing budget by 20-30% until ROAS recovers.</div>
-        <div><b>Expected outcome:</b> Restore ROAS closer to 30-day baseline.</div>
-      </div>
-    </div>
-    <div class="action-item sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <div class="action-body">
-        <div><b>What:</b> CPA increase &mdash; CPA Rs7729 vs baseline Rs1449 (+433.6%)</div>
-        <div><b>Where:</b> Google · 9shines label · Search_Camp_15_July_2026</div>
-        <div><b>Action:</b> Tighten targeting or pause underperforming ad groups/keywords.</div>
-        <div><b>Expected outcome:</b> Reduce cost per acquisition back to baseline range.</div>
-      </div>
-    </div>
-    <div class="action-item sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS drop &mdash; ROAS 3.02x vs baseline 3.98x (-24.1%)</div>
-        <div><b>Where:</b> Google · 9shines label · Long_Tshirts_utube - 2026-04-03</div>
-        <div><b>Action:</b> Review targeting/creative; consider reducing budget by 20-30% until ROAS recovers.</div>
-        <div><b>Expected outcome:</b> Restore ROAS closer to 30-day baseline.</div>
-      </div>
-    </div>
-    <div class="action-item sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <div class="action-body">
-        <div><b>What:</b> ROAS drop &mdash; ROAS 3.18x vs baseline 4.21x (-24.5%)</div>
-        <div><b>Where:</b> Google · 9shines label · PMAX_SLEEVELESS_FROCKSTYLE_13/07/26</div>
-        <div><b>Action:</b> Review targeting/creative; consider reducing budget by 20-30% until ROAS recovers.</div>
-        <div><b>Expected outcome:</b> Restore ROAS closer to 30-day baseline.</div>
-      </div>
-    </div>
-    <div class="action-item sev-warning">
-      <span class="badge sev-badge-warning">WARNING</span>
-      <div class="action-body">
-        <div><b>What:</b> CPA increase &mdash; CPA Rs822 vs baseline Rs621 (+32.4%)</div>
-        <div><b>Where:</b> Google · 9shines label · PMAX_SLEEVELESS_FROCKSTYLE_13/07/26</div>
-        <div><b>Action:</b> Tighten targeting or pause underperforming ad groups/keywords.</div>
-        <div><b>Expected outcome:</b> Reduce cost per acquisition back to baseline range.</div>
-      </div>
-    </div>
-    <div class="action-item sev-info">
-      <span class="badge sev-badge-info">INFO</span>
-      <div class="action-body">
-        <div><b>What:</b> CPM spike &mdash; CPM Rs519 vs baseline Rs394 (+31.8%)</div>
-        <div><b>Where:</b> Meta · Highgarden 2026</div>
-        <div><b>Action:</b> Check audience saturation and refresh creatives; consider broadening targeting.</div>
-        <div><b>Expected outcome:</b> Bring CPM back toward baseline, lowering cost per outcome.</div>
-      </div>
-    </div>
-</div>
+<div class="pane" id="acts">
+<h2 class="sh">Prioritised checklist from today's alerts</h2><h3 class="ah">CRITICAL <span class="cnt">19</span></h3><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">ROAS below 1.0x</span></div>
+<div class="ai"><i>What</i><span>ROAS 0.56x on Rs19,979 spend - losing money on ad-attributed revenue</span></div>
+<div class="ai"><i>Where</i><span>Meta - 9shines international</span></div>
+<div class="ai"><i>Action</i><span>Pause or cut budget on this entity today; if it is a learning-phase campaign, cap daily budget until ROAS clears 1.5x.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Stops cash burn on spend that returns less than it costs.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">ROAS collapse</span></div>
+<div class="ai"><i>What</i><span>ROAS 0.56x vs baseline 1.12x (-50%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - 9shines international</span></div>
+<div class="ai"><i>Action</i><span>Audit creative and audience overlap; roll back to the last winning creative set or reduce budget 30-40% while you diagnose.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Restores ROAS toward the 30-day baseline.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">ROAS below 1.0x</span></div>
+<div class="ai"><i>What</i><span>ROAS 0.00x on Rs4,144 spend - losing money on ad-attributed revenue</span></div>
+<div class="ai"><i>Where</i><span>Meta - 9 Shine 2023 CL - RI | TOF | TRAFFIC | 30/04/2024</span></div>
+<div class="ai"><i>Action</i><span>Pause or cut budget on this entity today; if it is a learning-phase campaign, cap daily budget until ROAS clears 1.5x.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Stops cash burn on spend that returns less than it costs.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">ROAS collapse</span></div>
+<div class="ai"><i>What</i><span>ROAS 0.00x vs baseline 0.35x (-100%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - 9 Shine 2023 CL - RI | TOF | TRAFFIC | 30/04/2024</span></div>
+<div class="ai"><i>Action</i><span>Audit creative and audience overlap; roll back to the last winning creative set or reduce budget 30-40% while you diagnose.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Restores ROAS toward the 30-day baseline.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">Conversions collapse</span></div>
+<div class="ai"><i>What</i><span>0 conversions vs baseline 0.5 (-100%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - 9 Shine 2023 CL - RI | TOF | TRAFFIC | 30/04/2024</span></div>
+<div class="ai"><i>Action</i><span>Check the pixel / conversion action is firing, then check stock availability on the promoted SKUs.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Restores conversion volume.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">ROAS below 1.0x</span></div>
+<div class="ai"><i>What</i><span>ROAS 0.86x on Rs4,458 spend - losing money on ad-attributed revenue</span></div>
+<div class="ai"><i>Where</i><span>Meta - Highgarden 2026 - KOREAN_PJ_SETS_20_JULY_2026</span></div>
+<div class="ai"><i>Action</i><span>Pause or cut budget on this entity today; if it is a learning-phase campaign, cap daily budget until ROAS clears 1.5x.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Stops cash burn on spend that returns less than it costs.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">ROAS collapse</span></div>
+<div class="ai"><i>What</i><span>ROAS 0.86x vs baseline 1.96x (-56%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - Highgarden 2026 - KOREAN_PJ_SETS_20_JULY_2026</span></div>
+<div class="ai"><i>Action</i><span>Audit creative and audience overlap; roll back to the last winning creative set or reduce budget 30-40% while you diagnose.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Restores ROAS toward the 30-day baseline.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">Conversions collapse</span></div>
+<div class="ai"><i>What</i><span>1 conversions vs baseline 4.9 (-80%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - Highgarden 2026 - KOREAN_PJ_SETS_20_JULY_2026</span></div>
+<div class="ai"><i>Action</i><span>Check the pixel / conversion action is firing, then check stock availability on the promoted SKUs.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Restores conversion volume.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">ROAS collapse</span></div>
+<div class="ai"><i>What</i><span>ROAS 1.76x vs baseline 4.04x (-56%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - Highgarden 2026 - All_CAT_Sales_Campaign_(19/06/2026)</span></div>
+<div class="ai"><i>Action</i><span>Audit creative and audience overlap; roll back to the last winning creative set or reduce budget 30-40% while you diagnose.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Restores ROAS toward the 30-day baseline.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">ROAS below 1.0x</span></div>
+<div class="ai"><i>What</i><span>ROAS 0.56x on Rs19,979 spend - losing money on ad-attributed revenue</span></div>
+<div class="ai"><i>Where</i><span>Meta - 9shines international - RI_TOF_NIGHTY_UAE_JUNE_25_2026</span></div>
+<div class="ai"><i>Action</i><span>Pause or cut budget on this entity today; if it is a learning-phase campaign, cap daily budget until ROAS clears 1.5x.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Stops cash burn on spend that returns less than it costs.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">ROAS collapse</span></div>
+<div class="ai"><i>What</i><span>ROAS 0.56x vs baseline 1.12x (-50%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - 9shines international - RI_TOF_NIGHTY_UAE_JUNE_25_2026</span></div>
+<div class="ai"><i>Action</i><span>Audit creative and audience overlap; roll back to the last winning creative set or reduce budget 30-40% while you diagnose.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Restores ROAS toward the 30-day baseline.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">ROAS collapse</span></div>
+<div class="ai"><i>What</i><span>ROAS 3.60x vs baseline 6.42x (-44%)</span></div>
+<div class="ai"><i>Where</i><span>Google - 9shines label - PMAX_13_AUG_26_ALP_RAY_SAT</span></div>
+<div class="ai"><i>Action</i><span>Audit creative and audience overlap; roll back to the last winning creative set or reduce budget 30-40% while you diagnose.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Restores ROAS toward the 30-day baseline.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">Spend spike</span></div>
+<div class="ai"><i>What</i><span>Spend Rs5,674 vs baseline Rs3,472 (+63%)</span></div>
+<div class="ai"><i>Where</i><span>Google - 9shines label - PMAX_13_AUG_26_ALP_RAY_SAT</span></div>
+<div class="ai"><i>Action</i><span>Verify the budget change was intentional; if not, reset the daily budget to its prior level.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Prevents unplanned overspend.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">Spend spike</span></div>
+<div class="ai"><i>What</i><span>Spend Rs4,634 vs baseline Rs2,456 (+89%)</span></div>
+<div class="ai"><i>Where</i><span>Google - 9shines label - PMAX_T_SHIRT_17TH_AUG_26</span></div>
+<div class="ai"><i>Action</i><span>Verify the budget change was intentional; if not, reset the daily budget to its prior level.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Prevents unplanned overspend.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">ROAS collapse</span></div>
+<div class="ai"><i>What</i><span>ROAS 2.42x vs baseline 4.50x (-46%)</span></div>
+<div class="ai"><i>Where</i><span>Google - 9shines label - PMAX_SLEEVELESS_FROCKSTYLE_13/07/26</span></div>
+<div class="ai"><i>Action</i><span>Audit creative and audience overlap; roll back to the last winning creative set or reduce budget 30-40% while you diagnose.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Restores ROAS toward the 30-day baseline.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">ROAS below 1.0x</span></div>
+<div class="ai"><i>What</i><span>ROAS 0.75x on Rs5,194 spend - losing money on ad-attributed revenue</span></div>
+<div class="ai"><i>Where</i><span>Google - Highgarden - PMAX (Pajama Sets) 03/05/2026</span></div>
+<div class="ai"><i>Action</i><span>Pause or cut budget on this entity today; if it is a learning-phase campaign, cap daily budget until ROAS clears 1.5x.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Stops cash burn on spend that returns less than it costs.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">Spend spike</span></div>
+<div class="ai"><i>What</i><span>Spend Rs5,194 vs baseline Rs2,316 (+124%)</span></div>
+<div class="ai"><i>Where</i><span>Google - Highgarden - PMAX (Pajama Sets) 03/05/2026</span></div>
+<div class="ai"><i>Action</i><span>Verify the budget change was intentional; if not, reset the daily budget to its prior level.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Prevents unplanned overspend.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">Spend spike</span></div>
+<div class="ai"><i>What</i><span>Spend Rs4,261 vs baseline Rs2,211 (+93%)</span></div>
+<div class="ai"><i>Where</i><span>Google - Highgarden - Pmax (08--April--2026) (Short Nighty &amp; Tshirts)</span></div>
+<div class="ai"><i>Action</i><span>Verify the budget change was intentional; if not, reset the daily budget to its prior level.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Prevents unplanned overspend.</span></div></div><div class="card act"><div class="chd"><span class="bdg red">CRITICAL</span><span class="cnm2">Spend spike</span></div>
+<div class="ai"><i>What</i><span>Spend Rs3,931 vs baseline Rs2,022 (+94%)</span></div>
+<div class="ai"><i>Where</i><span>Google - Highgarden - Pmax- Denim_Baby Doll_21/June/26</span></div>
+<div class="ai"><i>Action</i><span>Verify the budget change was intentional; if not, reset the daily budget to its prior level.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Prevents unplanned overspend.</span></div></div><h3 class="ah">WARNING <span class="cnt">8</span></h3><div class="card act"><div class="chd"><span class="bdg amb">WARNING</span><span class="cnm2">ROAS decline</span></div>
+<div class="ai"><i>What</i><span>ROAS 1.55x vs baseline 2.49x (-38%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - Highgarden 2026</span></div>
+<div class="ai"><i>Action</i><span>Refresh top-of-funnel creative and re-check landing page relevance for this campaign.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Recovers 10-20% of lost efficiency.</span></div></div><div class="card act"><div class="chd"><span class="bdg amb">WARNING</span><span class="cnm2">ROAS decline</span></div>
+<div class="ai"><i>What</i><span>ROAS 3.64x vs baseline 5.17x (-30%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - 9 Shine 2023 CL - RI | TOF | ASC | LONG TSHIRT - VALUE | 09/10/2025</span></div>
+<div class="ai"><i>Action</i><span>Refresh top-of-funnel creative and re-check landing page relevance for this campaign.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Recovers 10-20% of lost efficiency.</span></div></div><div class="card act"><div class="chd"><span class="bdg amb">WARNING</span><span class="cnm2">CPA increase</span></div>
+<div class="ai"><i>What</i><span>CPA Rs536 vs baseline Rs328 (+63%)</span></div>
+<div class="ai"><i>Where</i><span>Google - 9shines label - PMAX_13_AUG_26_ALP_RAY_SAT</span></div>
+<div class="ai"><i>Action</i><span>Reduce bids or tighten targeting; review search terms for waste.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Brings CPA back under target.</span></div></div><div class="card act"><div class="chd"><span class="bdg amb">WARNING</span><span class="cnm2">ROAS decline</span></div>
+<div class="ai"><i>What</i><span>ROAS 2.32x vs baseline 3.18x (-27%)</span></div>
+<div class="ai"><i>Where</i><span>Google - 9shines label - PMAX_T_SHIRT_17TH_AUG_26</span></div>
+<div class="ai"><i>Action</i><span>Refresh top-of-funnel creative and re-check landing page relevance for this campaign.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Recovers 10-20% of lost efficiency.</span></div></div><div class="card act"><div class="chd"><span class="bdg amb">WARNING</span><span class="cnm2">CPA increase</span></div>
+<div class="ai"><i>What</i><span>CPA Rs1,045 vs baseline Rs589 (+77%)</span></div>
+<div class="ai"><i>Where</i><span>Google - 9shines label - PMAX_SLEEVELESS_FROCKSTYLE_13/07/26</span></div>
+<div class="ai"><i>Action</i><span>Reduce bids or tighten targeting; review search terms for waste.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Brings CPA back under target.</span></div></div><div class="card act"><div class="chd"><span class="bdg amb">WARNING</span><span class="cnm2">ROAS decline</span></div>
+<div class="ai"><i>What</i><span>ROAS 2.15x vs baseline 3.39x (-37%)</span></div>
+<div class="ai"><i>Where</i><span>Google - 9shines label - Long_Tshirts_utube - 2026-04-03</span></div>
+<div class="ai"><i>Action</i><span>Refresh top-of-funnel creative and re-check landing page relevance for this campaign.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Recovers 10-20% of lost efficiency.</span></div></div><div class="card act"><div class="chd"><span class="bdg amb">WARNING</span><span class="cnm2">ROAS decline</span></div>
+<div class="ai"><i>What</i><span>ROAS 11.89x vs baseline 15.62x (-24%)</span></div>
+<div class="ai"><i>Where</i><span>Google - 9shines label - RI_MOF_Brand Search_16/02/2023</span></div>
+<div class="ai"><i>Action</i><span>Refresh top-of-funnel creative and re-check landing page relevance for this campaign.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Recovers 10-20% of lost efficiency.</span></div></div><div class="card act"><div class="chd"><span class="bdg amb">WARNING</span><span class="cnm2">New campaign below breakeven</span></div>
+<div class="ai"><i>What</i><span>ROAS 0.00x on Rs850 in first days - still in learning, watch closely</span></div>
+<div class="ai"><i>Where</i><span>Google - Highgarden - Baby_Doll_Video_28_Aug_26</span></div>
+<div class="ai"><i>Action</i><span>Leave in learning but cap daily budget; review again in 3 days before scaling.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Limits downside while the algorithm learns.</span></div></div><h3 class="ah">INFO <span class="cnt">5</span></h3><div class="card act"><div class="chd"><span class="bdg inf">INFO</span><span class="cnm2">CPM inflation</span></div>
+<div class="ai"><i>What</i><span>CPM Rs748 vs baseline Rs620 (+21%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - 9 Shine 2023 CL - SIGNATURE_CTATALOGUE_CAMPAIGN_28TH_JULY_26</span></div>
+<div class="ai"><i>Action</i><span>Watch delivery costs; queue a creative refresh if it persists another week.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Pre-empts a larger CPM spike.</span></div></div><div class="card act"><div class="chd"><span class="bdg inf">INFO</span><span class="cnm2">ROAS softening</span></div>
+<div class="ai"><i>What</i><span>ROAS 3.66x vs baseline 4.58x (-20%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - 9 Shine 2023 CL - RI_TOF_ASC_NOOR_NIGHTIES_MARCH_09</span></div>
+<div class="ai"><i>Action</i><span>Monitor for another 48h; no action unless the trend continues.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Avoids over-reacting to normal variance.</span></div></div><div class="card act"><div class="chd"><span class="bdg inf">INFO</span><span class="cnm2">ROAS softening</span></div>
+<div class="ai"><i>What</i><span>ROAS 3.67x vs baseline 4.46x (-18%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - 9 Shine 2023 CL - RI | TOF | ASC |  SHORT NIGHTY |  07/02/2024</span></div>
+<div class="ai"><i>Action</i><span>Monitor for another 48h; no action unless the trend continues.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Avoids over-reacting to normal variance.</span></div></div><div class="card act"><div class="chd"><span class="bdg inf">INFO</span><span class="cnm2">ROAS softening</span></div>
+<div class="ai"><i>What</i><span>ROAS 1.19x vs baseline 1.33x (-11%)</span></div>
+<div class="ai"><i>Where</i><span>Meta - Highgarden 2026 - RI_TOF_ASC_DENIM_CO_ORDSET_JUNE_12_2026</span></div>
+<div class="ai"><i>Action</i><span>Monitor for another 48h; no action unless the trend continues.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Avoids over-reacting to normal variance.</span></div></div><div class="card act"><div class="chd"><span class="bdg inf">INFO</span><span class="cnm2">Spend shift</span></div>
+<div class="ai"><i>What</i><span>Spend Rs2,151 vs baseline Rs2,977 (-28%)</span></div>
+<div class="ai"><i>Where</i><span>Google - 9shines label - RI_MOF_Brand Search_16/02/2023</span></div>
+<div class="ai"><i>Action</i><span>Note the pacing change; confirm it matches the planned budget calendar.</span></div>
+<div class="ai"><i>Expected outcome</i><span>Keeps monthly spend on plan.</span></div></div></div>
 
 <script>
-function showTab(i){
-  document.querySelectorAll('.tab-content').forEach((el,idx)=>el.classList.toggle('active', idx===i));
-  document.querySelectorAll('.tab-btn').forEach((el,idx)=>el.classList.toggle('active', idx===i));
-}
-const ctx1 = document.getElementById('metaRoasChart');
-new Chart(ctx1, {type:'bar', data:{labels:["9 Shine 2023 CL", "Highgarden 2026", "9shines international"], datasets:[
-  {label:'ROAS 7d', data:[4.12, 1.94, 2.85], backgroundColor:'#5b8def'},
-  {label:'ROAS baseline', data:[4.08, 3.13, 1.19], backgroundColor:'#3a4257'}
-]}, options:{responsive:true, plugins:{legend:{labels:{color:'#e6e9f0'}}, title:{display:true,text:'Meta ROAS: Actual vs Baseline',color:'#e6e9f0'}}, scales:{x:{ticks:{color:'#8b93a7'}}, y:{ticks:{color:'#8b93a7'}}}}});
-const ctx2 = document.getElementById('metaCpmChart');
-new Chart(ctx2, {type:'bar', data:{labels:["9 Shine 2023 CL", "Highgarden 2026", "9shines international"], datasets:[
-  {label:'CPM 7d', data:[193.0, 519.0, 1553.0], backgroundColor:'#ffb84d'},
-  {label:'CPM baseline', data:[200.0, 394.0, 1462.0], backgroundColor:'#3a4257'}
-]}, options:{responsive:true, plugins:{legend:{labels:{color:'#e6e9f0'}}, title:{display:true,text:'Meta CPM: Actual vs Baseline',color:'#e6e9f0'}}, scales:{x:{ticks:{color:'#8b93a7'}}, y:{ticks:{color:'#8b93a7'}}}}});
-const ctx3 = document.getElementById('googRoasChart');
-new Chart(ctx3, {type:'bar', data:{labels:["Search_Camp_15_July_20", "PMAX_SLEEVELESS_FROCKS", "Long_Tshirts_utube - 2", "RI_MOF_Brand Search_16", "PMAX_T_SHIRT_17TH_AUG_", "Pmax- Denim_Baby Doll_", "Pmax (08--April--2026)", "PMAX_13_AUG_26_ALP_RAY", "PMAX_PCN_DENIM_24_JULY", "PMAX (Pajama Sets) 03/"], datasets:[{label:'ROAS 7d', data:[0.31, 3.18, 3.02, 13.97, 3.61, 1.22, 0.87, 8.17, 5.51, 0], backgroundColor:'#5b8def'}]},
-  options:{responsive:true, plugins:{legend:{labels:{color:'#e6e9f0'}}, title:{display:true,text:'Google Ads ROAS by Campaign',color:'#e6e9f0'}}, scales:{x:{ticks:{color:'#8b93a7'}}, y:{ticks:{color:'#8b93a7'}}}}});
-const ctx4 = document.getElementById('googCpaChart');
-new Chart(ctx4, {type:'bar', data:{labels:["Search_Camp_15_July_20", "PMAX_SLEEVELESS_FROCKS", "Long_Tshirts_utube - 2", "RI_MOF_Brand Search_16", "PMAX_T_SHIRT_17TH_AUG_", "Pmax- Denim_Baby Doll_", "Pmax (08--April--2026)", "PMAX_13_AUG_26_ALP_RAY", "PMAX_PCN_DENIM_24_JULY", "PMAX (Pajama Sets) 03/"], datasets:[{label:'CPA dev %', data:[433.6, 32.4, 23.9, -5.8, 1.5, -1.4, -9.3, -19.5, -8.3, 0], backgroundColor:'#ff5470'}]},
-  options:{responsive:true, plugins:{legend:{labels:{color:'#e6e9f0'}}, title:{display:true,text:'Google Ads CPA Deviation %',color:'#e6e9f0'}}, scales:{x:{ticks:{color:'#8b93a7'}}, y:{ticks:{color:'#8b93a7'}}}}});
-</script>
-</body></html>
+document.querySelectorAll('.tb').forEach(function(b){b.onclick=function(){
+ document.querySelectorAll('.tb').forEach(function(x){x.classList.remove('on')});
+ document.querySelectorAll('.pane').forEach(function(x){x.classList.remove('on')});
+ b.classList.add('on');document.getElementById(b.dataset.t).classList.add('on');
+ setTimeout(function(){window.dispatchEvent(new Event('resize'))},30);}});
+var G='#7c8698',GR='#1e2430';
+var O={responsive:true,maintainAspectRatio:false,
+ plugins:{legend:{labels:{color:G,boxWidth:11,font:{size:11}}},title:{display:true,color:'#e6e9ef',font:{size:13,weight:'600'}}},
+ scales:{x:{ticks:{color:G,font:{size:10}},grid:{color:GR}},y:{ticks:{color:G,font:{size:10}},grid:{color:GR},beginAtZero:true}}};
+function mk(id,lbl,ds,title){var o=JSON.parse(JSON.stringify(O));o.plugins.title.text=title;
+ new Chart(document.getElementById(id),{type:'bar',data:{labels:lbl,datasets:ds},options:o});}
+mk('c1',["9 Shine 2023 CL", "Highgarden 2026", "9shines international"],[{label:'ROAS 7d',data:[4.3, 1.55, 0.56],backgroundColor:'#4d8dff'},{label:'30d baseline',data:[4.1, 2.49, 1.12],backgroundColor:'#33405c'}],'Meta ROAS: actual vs baseline');
+mk('c2',["9 Shine 2023 CL", "Highgarden 2026", "9shines international"],[{label:'CPM 7d',data:[197, 443, 1700],backgroundColor:'#c39bff'},{label:'30d baseline',data:[196, 400, 1515],backgroundColor:'#3d3352'}],'Meta CPM: actual vs baseline (Rs)');
+mk('c3',["PMAX_SLEEVELESS_FROCKSTYLE", "PMAX_13_AUG_26_ALP_RAY_SAT", "Long_Tshirts_utube - 2026-", "PMAX_T_SHIRT_17TH_AUG_26", "RI_MOF_Brand Search_16/02/", "PMAX_PCN_DENIM_24_JULY_26", "Pmax- Denim_Baby Doll_21/J", "Search_Camp_15_July_2026", "Pmax (08--April--2026) (Sh", "PMAX (Pajama Sets) 03/05/2", "Pmax_ Bamb_C.Blend_Hos_26t", "Baby_Doll_Video_28_Aug_26"],[{label:'ROAS 7d',data:[2.42, 3.6, 2.15, 2.32, 11.89, 5.91, 2.82, 2.48, 3.27, 0.75, 1.61, 0.0],backgroundColor:'#5fd39a'},{label:'30d baseline',data:[4.5, 6.42, 3.39, 3.18, 15.62, 5.05, 1.95, 1.55, 1.95, 0.39, 0, 0],backgroundColor:'#2a4a3a'}],'Google ROAS: actual vs baseline');
+mk('c4',["PMAX_SLEEVELESS_FROCKSTYLE", "PMAX_13_AUG_26_ALP_RAY_SAT", "Long_Tshirts_utube - 2026-", "PMAX_T_SHIRT_17TH_AUG_26", "RI_MOF_Brand Search_16/02/", "PMAX_PCN_DENIM_24_JULY_26", "Pmax- Denim_Baby Doll_21/J", "Search_Camp_15_July_2026", "Pmax (08--April--2026) (Sh", "PMAX (Pajama Sets) 03/05/2", "Pmax_ Bamb_C.Blend_Hos_26t", "Baby_Doll_Video_28_Aug_26"],[{label:'CPA deviation %',data:[77.3, 63.4, 5.7, 11.7, 9.9, -3.5, -31.9, -35.0, -38.7, -47.7, 0, 0],backgroundColor:'#ffc46b'}],'Google CPA deviation vs baseline (%)');
+</script></body></html>
